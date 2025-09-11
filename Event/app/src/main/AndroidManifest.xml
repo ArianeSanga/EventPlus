@@ -17,6 +17,8 @@
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
+        <activity android:name=".views.CreateEventActivity"
+                  android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
