@@ -12,6 +12,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Event">
         <activity
+            android:name=".ListaEventosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
