@@ -1,40 +1,44 @@
 package com.arianesanga.event.views
 
-import android.inputmethodservice.Keyboard
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.PersistableBundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.test.espresso.base.Default
-import com.arianesanga.event.ui.theme.EventTheme
 import coil.compose.AsyncImage
+import com.arianesanga.event.HomeActivity
+import com.arianesanga.event.ui.theme.EventTheme
 
-class CreateEventActivity : ComponentActivity(){
+class CreateEventActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             EventTheme {
                 CreateEventScreen()
             }
-
         }
     }
 }
 
 @Composable
 fun CreateEventScreen() {
-
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var eventName by remember { mutableStateOf("") }
@@ -44,35 +48,41 @@ fun CreateEventScreen() {
     var eventTime by remember { mutableStateOf("") }
     var eventLocation by remember { mutableStateOf("") }
 
+    val context = LocalContext.current
 
-    //laucher para selecionar a imagem
+    // Launcher para escolher imagem
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri = uri // aqui a imagem selecionada é salva
+        imageUri = uri
     }
 
-    Column(modifier = Modifier
-        .padding(16.dp)
-        .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        //botao para escolher imagem
-        Button(onClick = { launcher.launch("image/*") }) {
-            Text("Escolher Foto do Evento")
-        }
-
-        //mostrar a imagem escolhida
+        // Imagem redonda do evento
         imageUri?.let { uri ->
             AsyncImage(
                 model = uri,
                 contentDescription = "Foto do Evento",
                 modifier = Modifier
                     .size(120.dp)
-                    .padding(8.dp),
+                    .clip(CircleShape)
+                    .border(2.dp, Color.Gray, CircleShape),
                 contentScale = ContentScale.Crop
             )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Botão para escolher imagem
+        Button(onClick = { launcher.launch("image/*") }) {
+            Text("Escolher Foto do Evento")
         }
 
         // Nome do evento
@@ -97,9 +107,7 @@ fun CreateEventScreen() {
             onValueChange = { eventBudget = it },
             label = { Text("Orçamento (R$)") },
             modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            )
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
 
         // Data
@@ -128,10 +136,14 @@ fun CreateEventScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Botão criar evento
         Button(
             onClick = {
-                // Aqui você salva no Firestore ou no banco
-                // ex: salvarEvento(eventName, eventDescription, eventBudget, eventDate, eventTime, eventLocation)
+                // Mensagem de sucesso
+                Toast.makeText(context, "Evento criado com sucesso!", Toast.LENGTH_SHORT).show()
+
+                // Voltar para a HomeActivity
+                context.startActivity(Intent(context, HomeActivity::class.java))
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -139,4 +151,3 @@ fun CreateEventScreen() {
         }
     }
 }
-

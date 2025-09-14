@@ -14,10 +14,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -39,7 +42,7 @@ import com.arianesanga.event.ui.theme.ORANGE
 import com.arianesanga.event.ui.theme.WHITE
 
 @Composable
-fun Login(onLoginWithGoogle: () -> Unit) { // Adicione este parâmetro
+fun Login(onLoginWithGoogle: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -86,6 +89,7 @@ fun Login(onLoginWithGoogle: () -> Unit) { // Adicione este parâmetro
                 .fillMaxWidth()
                 .padding(20.dp)
         )
+
         Text(
             text = "Com um simples clique, você pode criar todo um evento e chamar a galera ",
             color = WHITE,
@@ -95,57 +99,29 @@ fun Login(onLoginWithGoogle: () -> Unit) { // Adicione este parâmetro
                 .padding(20.dp, 20.dp, 20.dp, 30.dp)
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            Button(
-                onClick = {
-                    // O botão de cadastro vai ser conectado à tela de cadastro depois
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Transparent
-                ),
-                border = BorderStroke(
-                    width = 1.dp,
-                    color = WHITE
-                )
-            ) {
-                Text(
-                    text = "Cadastre-se",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = WHITE
-                )
-            }
-
-            Button(
-                onClick = {
-                    onLoginWithGoogle() // Chame a função para iniciar o login com o Google
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = ORANGE
-                ),
-                modifier = Modifier.shadow(
+        // Botão removido do Row e adicionado diretamente na Column
+        Button(
+            onClick = { onLoginWithGoogle() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = ORANGE
+            ),
+            shape = RoundedCornerShape(50),
+            modifier = Modifier
+                .padding(horizontal = 20.dp) // Adicionado padding para centralizar o botão
+                .shadow(
                     elevation = 16.dp,
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(50),
                     spotColor = ORANGE
                 )
-            ) {
-                Text(
-                    text = "Fazer Login",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = WHITE
-                )
-            }
+                .fillMaxWidth()
+                .height(55.dp)
+        ) {
+            Text(
+                text = "Entrar com Google",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = WHITE
+            )
         }
-    }
-}
-
-// A função de Preview precisa ser atualizada para não dar erro
-@Preview
-@Composable
-private fun LoginPreview() {
-    Login(onLoginWithGoogle = {})
-}
+    } // Fecha o Column
+} // Fecha o Login
