@@ -91,7 +91,7 @@ fun Login(onLoginWithGoogle: () -> Unit) {
         )
 
         Text(
-            text = "Com um simples clique, você pode criar todo um evento e chamar a galera ",
+            text = "Crie eventos e compartilhe com seus amigos ",
             color = WHITE,
             fontSize = 16.sp,
             modifier = Modifier

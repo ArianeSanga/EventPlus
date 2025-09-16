@@ -1,6 +1,5 @@
 package com.arianesanga.event.views
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
@@ -23,22 +22,33 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.arianesanga.event.HomeActivity
+import com.arianesanga.event.data.Evento
+import com.arianesanga.event.data.EventoDatabase
+import com.arianesanga.event.data.EventoRepository
+import com.arianesanga.event.data.EventoViewModel
+import com.arianesanga.event.data.EventoViewModelFactory
 import com.arianesanga.event.ui.theme.EventTheme
 
 class CreateEventActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Cria Repository e ViewModel
+        val database = EventoDatabase.getDatabase(this)
+        val repository = EventoRepository(database.eventoDao())
+        val viewModel = EventoViewModelFactory(repository)
+            .create(EventoViewModel::class.java)
+
         setContent {
             EventTheme {
-                CreateEventScreen()
+                CreateEventScreen(viewModel)
             }
         }
     }
 }
 
 @Composable
-fun CreateEventScreen() {
+fun CreateEventScreen(viewModel: EventoViewModel) {
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var eventName by remember { mutableStateOf("") }
@@ -50,11 +60,12 @@ fun CreateEventScreen() {
 
     val context = LocalContext.current
 
-    // Launcher para escolher imagem
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        imageUri = uri
+        if (uri != null) {
+            imageUri = uri
+        }
     }
 
     Column(
@@ -65,7 +76,7 @@ fun CreateEventScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Imagem redonda do evento
+        // Imagem redonda
         imageUri?.let { uri ->
             AsyncImage(
                 model = uri,
@@ -78,30 +89,22 @@ fun CreateEventScreen() {
             )
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Botão para escolher imagem
         Button(onClick = { launcher.launch("image/*") }) {
             Text("Escolher Foto do Evento")
         }
 
-        // Nome do evento
         TextField(
             value = eventName,
             onValueChange = { eventName = it },
             label = { Text("Nome do Evento") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        // Descrição
         TextField(
             value = eventDescription,
             onValueChange = { eventDescription = it },
             label = { Text("Descrição do Evento") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        // Orçamento
         TextField(
             value = eventBudget,
             onValueChange = { eventBudget = it },
@@ -109,24 +112,18 @@ fun CreateEventScreen() {
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
-
-        // Data
         TextField(
             value = eventDate,
             onValueChange = { eventDate = it },
             label = { Text("Data (dd/mm/aaaa)") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        // Hora
         TextField(
             value = eventTime,
             onValueChange = { eventTime = it },
             label = { Text("Hora (hh:mm)") },
             modifier = Modifier.fillMaxWidth()
         )
-
-        // Local
         TextField(
             value = eventLocation,
             onValueChange = { eventLocation = it },
@@ -136,14 +133,25 @@ fun CreateEventScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Botão criar evento
         Button(
             onClick = {
-                // Mensagem de sucesso
+                // Cria objeto Evento
+                val evento = Evento(
+                    nome = eventName,
+                    descricao = eventDescription,
+                    data = "Data: $eventDate\nHora: $eventTime",
+                    local = eventLocation,
+                    orcamento = eventBudget.toDoubleOrNull() ?: 0.0
+                )
+
+                // Adiciona no banco via ViewModel
+                viewModel.adicionarEvento(evento)
+
+                // Feedback
                 Toast.makeText(context, "Evento criado com sucesso!", Toast.LENGTH_SHORT).show()
 
-                // Voltar para a HomeActivity
-                context.startActivity(Intent(context, HomeActivity::class.java))
+                // Volta para a HomeActivity
+                (context as? ComponentActivity)?.finish()
             },
             modifier = Modifier.fillMaxWidth()
         ) {

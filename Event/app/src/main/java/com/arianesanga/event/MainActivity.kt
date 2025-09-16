@@ -42,6 +42,12 @@ class MainActivity : ComponentActivity() {
 
         auth = Firebase.auth
 
+        //caso o usario ja estiver logado, ele vai direto para a tela HomeActivy
+        if (auth.currentUser != null) {
+            startActivity(Intent(this, HomeActivity::class.java))
+            finish()
+        }
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()

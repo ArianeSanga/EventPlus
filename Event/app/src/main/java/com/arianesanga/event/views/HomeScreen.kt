@@ -1,8 +1,10 @@
 package com.arianesanga.event.views
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -10,22 +12,27 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.arianesanga.event.ui.theme.EventTheme
+import com.arianesanga.event.data.Evento
+import com.arianesanga.event.data.EventoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable//desenha na tela
+@Composable
 fun HomeScreenStyled(
-    onCreateEventClick: () -> Unit,//acoes que seram executadas quando o usuario clicar no botao
+    viewModel: EventoViewModel,
+    onCreateEventClick: () -> Unit,
     onViewEventsClick: () -> Unit,
     onProfileClick: () -> Unit
 ) {
-    Scaffold(//layout base no superior da tela
+    val eventos by viewModel.eventos.collectAsState()
+
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Event+") },
@@ -43,15 +50,44 @@ fun HomeScreenStyled(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Botões principais (chamam callbacks passados pela Activity)
             item {
-                EventCard("Criar Evento", Icons.Default.Add, onCreateEventClick)
+                EventCard("Criar Evento", Icons.Default.Add) {
+                    onCreateEventClick()
+                }
             }
             item {
-                EventCard("Ver Eventos", Icons.Default.List, onViewEventsClick)
+                EventCard("Ver Eventos", Icons.Default.List) {
+                    onViewEventsClick()
+                }
             }
             item {
-                EventCard("Perfil", Icons.Default.Person, onProfileClick)
+                EventCard("Perfil", Icons.Default.Person) {
+                    onProfileClick()
+                }
             }
+
+            // Lista de eventos existentes
+            items(eventos) { evento ->
+                EventCardEvento(evento)
+            }
+        }
+    }
+}
+
+@Composable
+fun EventCardEvento(evento: Evento) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(8.dp),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Nome: ${evento.nome}", style = MaterialTheme.typography.titleMedium)
+            Text(text = "Descrição: ${evento.descricao}")
+            Text(text = "Data: ${evento.data}")
+            Text(text = "Local: ${evento.local}")
+            Text(text = "Orçamento: R$ ${evento.orcamento}")
         }
     }
 }
@@ -73,17 +109,5 @@ fun EventCard(title: String, icon: ImageVector, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(16.dp))
             Text(title, style = MaterialTheme.typography.titleMedium)
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewHomeScreenStyled() {
-    EventTheme {
-        HomeScreenStyled(
-            onCreateEventClick = {},
-            onViewEventsClick = {},
-            onProfileClick = {}
-        )
     }
 }

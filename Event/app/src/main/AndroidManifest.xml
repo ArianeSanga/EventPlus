@@ -11,9 +11,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Event">
-        <activity
-            android:name=".ListaEventosActivity"
-            android:exported="false" />
+        <activity android:name=".views.EventListActivity" />
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
