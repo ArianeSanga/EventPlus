@@ -11,6 +11,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Event">
+        <activity android:name=".views.EventListActivity" />
+        <activity
+            android:name=".HomeActivity"
+            android:exported="false" />
+        <activity android:name=".views.CreateEventActivity"
+                  android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -23,5 +29,6 @@
             </intent-filter>
         </activity>
     </application>
+
 
 </manifest>
