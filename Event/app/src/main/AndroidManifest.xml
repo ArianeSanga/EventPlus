@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission
+        android:name="android.permission.READ_MEDIA_VISUAL"
+        tools:targetApi="upsideDownCake" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -10,13 +14,18 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Event">
-        <activity android:name=".views.EventListActivity" />
+        android:theme="@style/Theme.Event"
+        tools:targetApi="34"> <activity android:name=".views.EventListActivity"
+        android:exported="false" />
+
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
+
         <activity android:name=".views.CreateEventActivity"
-                  android:exported="false"/>
+            android:exported="false"/>
+
+        <activity android:name=".views.ProfileActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -29,6 +38,4 @@
             </intent-filter>
         </activity>
     </application>
-
-
 </manifest>

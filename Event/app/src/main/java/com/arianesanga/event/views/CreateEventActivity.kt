@@ -1,11 +1,13 @@
 package com.arianesanga.event.views
 
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -21,6 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
 import com.arianesanga.event.data.Evento
 import com.arianesanga.event.data.EventoDatabase
@@ -36,8 +39,9 @@ class CreateEventActivity : ComponentActivity() {
         // Cria Repository e ViewModel
         val database = EventoDatabase.getDatabase(this)
         val repository = EventoRepository(database.eventoDao())
-        val viewModel = EventoViewModelFactory(repository)
-            .create(EventoViewModel::class.java)
+        val factory = EventoViewModelFactory(repository)
+        val viewModel = ViewModelProvider(this, factory)[EventoViewModel::class.java]
+
 
         setContent {
             EventTheme {
@@ -60,13 +64,20 @@ fun CreateEventScreen(viewModel: EventoViewModel) {
 
     val context = LocalContext.current
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+    // NOVO: Launcher que usa o Photo Picker. Não precisa de permissões!
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
     ) { uri: Uri? ->
         if (uri != null) {
+            // CRUCIAL: Solicitar persistência de acesso. Isso garante que o app
+            // possa exibir a imagem (via URI) após a seleção e mesmo após reiniciar.
+            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
+            context.contentResolver.takePersistableUriPermission(uri, flag)
+
             imageUri = uri
         }
     }
+
 
     Column(
         modifier = Modifier
@@ -89,7 +100,14 @@ fun CreateEventScreen(viewModel: EventoViewModel) {
             )
         }
 
-        Button(onClick = { launcher.launch("image/*") }) {
+        // O BOTÃO AGORA CHAMA O LAUNCHER DO PHOTO PICKER
+        Button(
+            onClick = {
+                imagePickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            }
+        ) {
             Text("Escolher Foto do Evento")
         }
 
@@ -139,6 +157,7 @@ fun CreateEventScreen(viewModel: EventoViewModel) {
                 val evento = Evento(
                     nome = eventName,
                     descricao = eventDescription,
+                    // Combinando data e hora como você já fazia
                     data = "Data: $eventDate\nHora: $eventTime",
                     local = eventLocation,
                     orcamento = eventBudget.toDoubleOrNull() ?: 0.0

@@ -26,4 +26,12 @@ class EventoViewModel(private val repository: EventoRepository): ViewModel(){
             carregarEventos()//atualiza a lista depois de adicionar
         }
     }
+
+    fun deletarEvento(evento: Evento) {
+        viewModelScope.launch {
+            repository.delete(evento)
+            carregarEventos()
+        }
+    }
+
 }

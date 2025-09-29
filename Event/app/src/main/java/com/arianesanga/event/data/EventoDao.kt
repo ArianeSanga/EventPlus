@@ -1,6 +1,7 @@
 package com.arianesanga.event.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 
@@ -11,4 +12,7 @@ interface EventoDao{
 
     @Query("SELECT * FROM eventos")//busca todos os eventos no banco
     suspend fun listarTodos(): List<Evento>
+
+    @Delete
+    suspend fun deletar(evento: Evento)
 }

@@ -13,6 +13,7 @@ import com.arianesanga.event.ui.theme.EventTheme
 import com.arianesanga.event.views.CreateEventActivity
 import com.arianesanga.event.views.EventListActivity
 import com.arianesanga.event.views.HomeScreenStyled
+import com.arianesanga.event.views.ProfileActivity
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,8 +38,7 @@ class HomeActivity : ComponentActivity() {
                         startActivity(Intent(this@HomeActivity, EventListActivity::class.java))
                     },
                     onProfileClick = {
-                        // Se tiver ProfileActivity, abrir aqui:
-                        // startActivity(Intent(this@HomeActivity, ProfileActivity::class.java))
+                        startActivity(Intent(this@HomeActivity, ProfileActivity::class.java))
                     }
                 )
             }

@@ -15,6 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.arianesanga.event.data.*
 import com.arianesanga.event.ui.theme.EventTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.Alignment
 
 class EventListActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,16 +63,31 @@ fun EventListScreen(viewModel: EventoViewModel) {
                         .padding(vertical = 4.dp),
                     elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Nome: ${evento.nome}", style = MaterialTheme.typography.titleMedium)
-                        Text("Descrição: ${evento.descricao}")
-                        Text("Data e Hora: ${evento.data}")
-                        Text("Local: ${evento.local}")
-                        Text("Orçamento: R$${evento.orcamento}")
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Nome: ${evento.nome}", style = MaterialTheme.typography.titleMedium)
+                            Text("Descrição: ${evento.descricao}")
+                            Text("Data e Hora: ${evento.data}")
+                            Text("Local: ${evento.local}")
+                            Text("Orçamento: R$${evento.orcamento}")
+                        }
+
+                        // Botão de excluir evento
+                        IconButton(onClick = { viewModel.deletarEvento(evento) }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Excluir evento"
+                            )
+                        }
                     }
                 }
             }
         }
     }
-
 }
