@@ -43,9 +43,9 @@ Com ele, é possível cadastrar eventos, gerenciar convidados, criar tarefas, co
 
 ##  Roadmap
 - [x] Estrutura inicial do app  
-- [ ] Persistência local (SQLite)  
+- [x] Persistência local (SQLite)  
 - [ ] Notificações e lembretes  
-- [ ] Integração Firebase  
+- [x] Integração Firebase  
 - [ ] API de clima  
 - [ ] Mapas e multimídia  
 
