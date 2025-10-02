@@ -26,6 +26,10 @@
             android:exported="false"/>
 
         <activity android:name=".views.ProfileActivity" />
+
+        <activity android:name=".views.TarefaActivity" android:exported="false" />
+
+        <activity android:name=".views.ConvidadoActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

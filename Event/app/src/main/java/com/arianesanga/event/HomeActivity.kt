@@ -1,5 +1,5 @@
 package com.arianesanga.event
-
+import com.arianesanga.event.views.OrganizerScreens
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,6 +14,7 @@ import com.arianesanga.event.views.CreateEventActivity
 import com.arianesanga.event.views.EventListActivity
 import com.arianesanga.event.views.HomeScreenStyled
 import com.arianesanga.event.views.ProfileActivity
+
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,3 +46,4 @@ class HomeActivity : ComponentActivity() {
         }
     }
 }
+

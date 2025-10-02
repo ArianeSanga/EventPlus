@@ -18,6 +18,7 @@ import com.google.firebase.ktx.Firebase
 
 
 import androidx.activity.result.contract.ActivityResultContracts
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
 
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        FirebaseApp.initializeApp(this)
 
         auth = Firebase.auth
 
