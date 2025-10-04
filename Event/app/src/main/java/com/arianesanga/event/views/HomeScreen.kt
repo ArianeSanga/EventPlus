@@ -66,11 +66,6 @@ fun HomeScreenStyled(
                     onProfileClick()
                 }
             }
-
-            // Lista de eventos existentes
-            items(eventos) { evento ->
-                EventCardEvento(evento)
-            }
         }
     }
 }

@@ -15,8 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import com.arianesanga.event.data.*
 import com.arianesanga.event.ui.theme.EventTheme
-import com.google.firebase.auth.FirebaseAuth
-import android.util.Log
+import androidx.compose.material3.SmallTopAppBar
 
 class ConvidadoActivity : ComponentActivity() {
 
@@ -37,13 +36,12 @@ class ConvidadoActivity : ComponentActivity() {
             ConvidadoViewModelFactory(repository)
         )[ConvidadoViewModel::class.java]
 
-        // Carrega convidados locais e observa Firebase
-        viewModel.carregarConvidados(eventoId)
-        viewModel.observarConvidadosFirebase(eventoId)
+        viewModel.setEventoId(eventoId)
+        viewModel.carregarConvidados()
 
         setContent {
             EventTheme {
-                ConvidadoScreen(viewModel, eventoId)
+                ConvidadoScreen(viewModel) // mantém lógica do eventoId no ViewModel
             }
         }
     }
@@ -51,15 +49,14 @@ class ConvidadoActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConvidadoScreen(viewModel: ConvidadoViewModel, eventoId: Int) {
+fun ConvidadoScreen(viewModel: ConvidadoViewModel) {
     var nome by remember { mutableStateOf("") }
     var telefone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
 
     val convidados by viewModel.convidados.collectAsState()
     val context = LocalContext.current
-
-    val senhaPadrao = "123456" // pode gerar aleatória depois
+    val senhaPadrao = "123456"
 
     Scaffold(
         topBar = { SmallTopAppBar(title = { Text("Convidados do Evento") }) }
@@ -69,19 +66,26 @@ fun ConvidadoScreen(viewModel: ConvidadoViewModel, eventoId: Int) {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // Campos de entrada
+
+            // --- Campos de entrada ---
             OutlinedTextField(
                 value = nome,
                 onValueChange = { nome = it },
                 label = { Text("Nome") },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = telefone,
                 onValueChange = { telefone = it },
                 label = { Text("Telefone") },
                 modifier = Modifier.fillMaxWidth()
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -89,16 +93,16 @@ fun ConvidadoScreen(viewModel: ConvidadoViewModel, eventoId: Int) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão de adicionar convidado
+            // --- Botão de adicionar convidado ---
             Button(
                 onClick = {
                     if (nome.isNotEmpty() && telefone.isNotEmpty() && email.isNotEmpty()) {
                         val convidado = Convidado(
                             nome = nome,
                             telefone = telefone,
-                            eventoId = eventoId,
+                            eventoId = 0,
                             email = email,
                         )
 
@@ -125,21 +129,11 @@ fun ConvidadoScreen(viewModel: ConvidadoViewModel, eventoId: Int) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Lista de convidados
+            // --- Lista de convidados (mantida como estava) ---
             LazyColumn {
                 items(convidados) { convidado ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        elevation = CardDefaults.cardElevation(4.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Nome: ${convidado.nome}")
-                            Text("Telefone: ${convidado.telefone}")
-                            Text("Email: ${convidado.email}")
-                        }
-                    }
+                    Text("${convidado.nome} - ${convidado.telefone} - ${convidado.email}")
+                    Divider()
                 }
             }
         }

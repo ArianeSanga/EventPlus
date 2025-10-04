@@ -1,5 +1,5 @@
 package com.arianesanga.event
-import com.arianesanga.event.views.OrganizerScreens
+
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -14,13 +14,13 @@ import com.arianesanga.event.views.CreateEventActivity
 import com.arianesanga.event.views.EventListActivity
 import com.arianesanga.event.views.HomeScreenStyled
 import com.arianesanga.event.views.ProfileActivity
+import com.arianesanga.event.views.OrganizerScreens // Se não for usado, remova este import.
 
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // criar db/repository/viewmodel
         val database = EventoDatabase.getDatabase(this)
         val repository = EventoRepository(database.eventoDao())
         val viewModel = ViewModelProvider(
@@ -28,10 +28,18 @@ class HomeActivity : ComponentActivity() {
             EventoViewModelFactory(repository)
         )[EventoViewModel::class.java]
 
+
+        viewModel.baixarEventosFirebase()
+        viewModel.carregarEventos()
+
+
         setContent {
             EventTheme {
                 HomeScreenStyled(
+                    // MANTEMOS O viewModel AQUI para COMPILAR.
+                    // O problema da lista aparecer está DENTRO do HomeScreenStyled.
                     viewModel = viewModel,
+
                     onCreateEventClick = {
                         startActivity(Intent(this@HomeActivity, CreateEventActivity::class.java))
                     },
@@ -46,4 +54,3 @@ class HomeActivity : ComponentActivity() {
         }
     }
 }
-

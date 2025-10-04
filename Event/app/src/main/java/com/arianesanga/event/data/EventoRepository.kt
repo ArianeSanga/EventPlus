@@ -6,8 +6,8 @@ class EventoRepository(private val eventoDao: EventoDao) {
         eventoDao.inserir(evento)
     }
 
-    suspend fun getAllEventos(): List<Evento> {
-        return eventoDao.listarTodos()
+    suspend fun getEventosByOwner(ownerUid: String): List<Evento> {
+        return eventoDao.listarPorOwner(ownerUid)
     }
 
     suspend fun delete(evento: Evento) {

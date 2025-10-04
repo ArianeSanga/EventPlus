@@ -14,13 +14,24 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
     private val _convidados = MutableStateFlow<List<Convidado>>(emptyList())
     val convidados: StateFlow<List<Convidado>> get() = _convidados
 
+    private val _eventoId = MutableStateFlow(-1)
+
     private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
 
-
-    fun carregarConvidados(eventoId: Int) {
+    fun setEventoId(id: Int) {
+        _eventoId.value = id
+    }
+    fun carregarConvidados() {
         viewModelScope.launch {
-            repository.listarPorEvento(eventoId).collect { lista ->
-                _convidados.value = lista
+            val currentEventoId = _eventoId.value
+            if (currentEventoId > 0) {
+                repository.listarPorEvento(currentEventoId).collect { lista ->
+                    _convidados.value = lista
+                }
+            } else {
+                Log.e("ConvidadoViewModel", "EventoId inválido ao carregar convidados.")
+                _convidados.value = emptyList()
             }
         }
     }
@@ -30,7 +41,8 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
         viewModelScope.launch {
             try {
                 repository.inserir(convidado)
-                carregarConvidados(convidado.eventoId)
+
+                carregarConvidados()
                 Log.d("ConvidadoViewModel", "Convidado salvo localmente: ${convidado.nome}")
             } catch (e: Exception) {
                 Log.e("ConvidadoViewModel", "Erro ao salvar localmente: ${e.message}")
@@ -48,8 +60,12 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
             "firebaseUid" to convidado.firebaseUid
         )
 
+
+        val docId = convidado.firebaseUid ?: throw IllegalStateException("Firebase UID está nulo.")
+
         db.collection("convidados")
-            .add(convidadoMap)
+            .document(docId) // Define o UID como o nome do documento
+            .set(convidadoMap)
             .addOnSuccessListener {
                 Log.d("ConvidadoViewModel", "Convidado adicionado no Firestore: ${convidado.nome}")
             }
@@ -60,26 +76,35 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
 
 
     fun criarContaEAdicionarConvidado(convidado: Convidado, senha: String) {
-        val auth = FirebaseAuth.getInstance()
+
+        val currentEventoId = _eventoId.value
+
+        if (currentEventoId <= 0) {
+            Log.e("ConvidadoViewModel", "Falha: EventoId não definido ou inválido.")
+            return
+        }
 
         auth.createUserWithEmailAndPassword(convidado.email, senha)
             .addOnSuccessListener { result ->
                 val uid = result.user?.uid
                 Log.d("ConvidadoViewModel", "Conta criada para ${convidado.email}, UID: $uid")
 
-                // 1. Cria uma nova cópia do convidado com o UID do Firebase
-                val convidadoComUid = convidado.copy(firebaseUid = uid)
+                val convidadoComUid = convidado.copy(
+                    firebaseUid = uid,
+                    eventoId = currentEventoId // Sobrescreve o ID do evento com o ID interno
+                )
 
-                // 2. Salva localmente (agora sem o campo 'senha' no Model)
+
                 adicionarConvidadoLocal(convidadoComUid)
 
-                // 3. Salva no Firestore (melhor usar o UID como ID do documento para evitar duplicidade)
+
                 adicionarConvidadoFirebase(convidadoComUid)
             }
             .addOnFailureListener { e ->
                 Log.e("ConvidadoViewModel", "Erro ao criar conta: ${e.message}")
             }
     }
+
 
     fun observarConvidadosFirebase(eventoId: Int) {
         db.collection("convidados")
@@ -91,22 +116,23 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
                 }
 
                 snapshot?.documents?.forEach { doc ->
-                    // Mapeia o documento do Firestore para o modelo local
                     val convidadoFirebase = Convidado(
-                        // O ID local é 0, mas será ignorado ou corrigido pelo Repository/DAO
                         id = 0,
                         nome = doc.getString("nome") ?: "",
                         telefone = doc.getString("telefone") ?: "",
+                        // Garante que o ID local do evento está correto
                         eventoId = (doc.getLong("eventoId")?.toInt() ?: eventoId),
                         email = doc.getString("email") ?: "",
-                        firebaseUid = doc.getString("firebaseUid") // Recebe o UID
+                        firebaseUid = doc.getString("firebaseUid")
                     )
 
-                    // **Ação Principal:** Chama a nova lógica de sincronização
                     viewModelScope.launch {
                         try {
                             repository.sincronizarConvidado(convidadoFirebase)
                             Log.d("ConvidadoViewModel", "Sincronizado via Firebase: ${convidadoFirebase.nome}")
+
+                            carregarConvidados()
+
                         } catch (e: Exception) {
                             Log.e("ConvidadoViewModel", "Erro ao sincronizar: ${e.message}")
                         }
