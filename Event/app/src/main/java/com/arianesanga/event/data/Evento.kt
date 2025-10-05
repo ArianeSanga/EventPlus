@@ -10,5 +10,6 @@ data class Evento(
     val descricao : String,
     val data: String,
     val local: String,
-    val orcamento: Double
+    val orcamento: Double,
+    val ownerUid: String? = null
 )
