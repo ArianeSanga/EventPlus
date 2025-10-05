@@ -102,7 +102,7 @@ fun ConvidadoScreen(viewModel: ConvidadoViewModel) {
                         val convidado = Convidado(
                             nome = nome,
                             telefone = telefone,
-                            eventoId = 0,
+                            eventoId = viewModel.eventoIdAtual ?: 0,
                             email = email,
                         )
 

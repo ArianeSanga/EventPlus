@@ -16,26 +16,15 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
 
     private val _eventoId = MutableStateFlow(-1)
 
+    val eventoIdAtual: Int?
+        get() = _eventoId.value.takeIf { it > 0 }
+
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
     fun setEventoId(id: Int) {
         _eventoId.value = id
     }
-    fun carregarConvidados() {
-        viewModelScope.launch {
-            val currentEventoId = _eventoId.value
-            if (currentEventoId > 0) {
-                repository.listarPorEvento(currentEventoId).collect { lista ->
-                    _convidados.value = lista
-                }
-            } else {
-                Log.e("ConvidadoViewModel", "EventoId inválido ao carregar convidados.")
-                _convidados.value = emptyList()
-            }
-        }
-    }
-
 
     private fun adicionarConvidadoLocal(convidado: Convidado) {
         viewModelScope.launch {
@@ -50,6 +39,19 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
         }
     }
 
+    fun carregarConvidados() {
+        viewModelScope.launch {
+            val currentEventoId = _eventoId.value
+            if (currentEventoId > 0) {
+                repository.listarPorEvento(currentEventoId).collect { lista ->
+                    _convidados.value = lista
+                }
+            } else {
+                Log.e("ConvidadoViewModel", "EventoId inválido ao carregar convidados.")
+                _convidados.value = emptyList()
+            }
+        }
+    }
 
     private fun adicionarConvidadoFirebase(convidado: Convidado) {
         val convidadoMap = hashMapOf(
@@ -61,7 +63,11 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
         )
 
 
-        val docId = convidado.firebaseUid ?: throw IllegalStateException("Firebase UID está nulo.")
+        val docId = convidado.firebaseUid
+        if (docId == null) {
+            Log.e("ConvidadoViewModel", "UID nulo, não foi possível salvar no Firestore.")
+            return
+        }
 
         db.collection("convidados")
             .document(docId) // Define o UID como o nome do documento
@@ -96,8 +102,6 @@ class ConvidadoViewModel(private val repository: ConvidadoRepository) : ViewMode
 
 
                 adicionarConvidadoLocal(convidadoComUid)
-
-
                 adicionarConvidadoFirebase(convidadoComUid)
             }
             .addOnFailureListener { e ->
