@@ -30,6 +30,8 @@
         <activity android:name=".views.TarefaActivity" android:exported="false" />
 
         <activity android:name=".views.ConvidadoActivity" />
+        <activity android:name=".views.ConvidadoHomeActivity" />
+        <activity android:name=".views.ConvidadoLoginActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

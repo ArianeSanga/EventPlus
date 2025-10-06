@@ -18,6 +18,8 @@ import com.google.firebase.ktx.Firebase
 
 
 import androidx.activity.result.contract.ActivityResultContracts
+import com.arianesanga.event.views.ConvidadoActivity
+import com.arianesanga.event.views.ConvidadoLoginActivity
 import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
@@ -33,7 +35,7 @@ class MainActivity : ComponentActivity() {
             val account = task.getResult(ApiException::class.java)!!
             firebaseAuthWithGoogle(account.idToken!!)
         } catch (e: ApiException) {
-            // Login falhou, você pode mostrar uma mensagem de erro aqui
+            e.printStackTrace()
         }
     }
 
@@ -63,11 +65,18 @@ class MainActivity : ComponentActivity() {
                     onLoginWithGoogle = {
                         val signInIntent = googleSignInClient.signInIntent
                         googleSignInLauncher.launch(signInIntent)
+                    },
+                    onLoginConvidado = {
+                        // Aqui passamos o eventoId fixo só para teste
+                        val intent = Intent(this, ConvidadoLoginActivity::class.java)
+                        intent.putExtra("eventoId", 1) // TROQUE para um ID de evento real no seu banco
+                        startActivity(intent)
                     }
                 )
             }
         }
     }
+
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)

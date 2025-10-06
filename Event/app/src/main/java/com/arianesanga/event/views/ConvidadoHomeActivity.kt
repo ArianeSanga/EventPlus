@@ -13,16 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.arianesanga.event.ui.theme.EventTheme
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
 
 class ConvidadoHomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val email = intent.getStringExtra("convidadoEmail") // email do convidado
+
         setContent {
             EventTheme {
-                // Passamos o email do usuário para garantir que o Composable só funcione se estiver logado
-                ConvidadoHomeScreen(FirebaseAuth.getInstance().currentUser?.email)
+                // Chama o Composable diretamente aqui
+                ConvidadoHomeScreen(email)
             }
         }
     }
@@ -30,57 +33,70 @@ class ConvidadoHomeActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-// Recebe o email como parâmetro para garantir que o estado de login seja considerado
 fun ConvidadoHomeScreen(userEmail: String?) {
-    val db = FirebaseFirestore.getInstance()
     val context = LocalContext.current
+    val db = FirebaseFirestore.getInstance()
 
-    // Usamos um StateFlow ou State para gerenciar o estado da busca
-    var eventosIds by remember { mutableStateOf<List<String>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var convites by remember { mutableStateOf(listOf<Pair<String, String>>()) }
+    // Pair<EventoNome, ConvidadoNome>
 
     LaunchedEffect(userEmail) {
-        if (userEmail != null) {
-            isLoading = true
-            db.collection("convidados")
-                .whereEqualTo("email", userEmail)
-                .get()
-                .addOnSuccessListener { docs ->
-                    // Mapeia os IDs dos eventos que este convidado faz parte
-                    eventosIds = docs.mapNotNull { it.getLong("eventoId")?.toString() }
+        if (!userEmail.isNullOrEmpty()) {
+            try {
+                val snapshot = db.collection("convidados")
+                    .whereEqualTo("email", userEmail)
+                    .get()
+                    .await()
+
+                val listaConvites = mutableListOf<Pair<String, String>>()
+
+                for (doc in snapshot.documents) {
+                    val nomeConvidado = doc.getString("nome") ?: "Sem Nome"
+                    val eventoId = doc.getLong("eventoId")?.toInt() ?: continue
+
+                    val eventoSnapshot = db.collection("eventos")
+                        .document(eventoId.toString())
+                        .get()
+                        .await()
+
+                    val nomeEvento = eventoSnapshot.getString("nome") ?: "Evento Sem Nome"
+
+                    listaConvites.add(nomeEvento to nomeConvidado)
                 }
-                .addOnFailureListener { e ->
-                    Toast.makeText(context, "Erro ao buscar convites: ${e.message}", Toast.LENGTH_LONG).show()
-                    eventosIds = emptyList()
-                }
-                .addOnCompleteListener {
-                    isLoading = false
-                }
+
+                convites = listaConvites
+            } catch (e: Exception) {
+                Toast.makeText(context, "Erro ao buscar convites: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                isLoading = false
+            }
         } else {
-            // Se o email for nulo, não está logado ou a informação não está disponível
+            Toast.makeText(context, "Email inválido", Toast.LENGTH_SHORT).show()
             isLoading = false
-            Toast.makeText(context, "Usuário não logado ou email indisponível.", Toast.LENGTH_SHORT).show()
         }
     }
 
     Scaffold(
         topBar = { SmallTopAppBar(title = { Text("Meus Convites") }) }
-    ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues).padding(16.dp)) {
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+        ) {
             when {
                 isLoading -> {
-                    // Estado de Carregamento
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
-                    Text("Buscando seus convites...")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Carregando convites...")
                 }
-                eventosIds.isEmpty() -> {
-                    // Estado de Vazio
-                    Text("Você não tem convites ainda.")
+                convites.isEmpty() -> {
+                    Text("Você não tem convites.")
                 }
                 else -> {
-                    // Estado de Sucesso
                     LazyColumn {
-                        items(eventosIds) { eventoId ->
+                        items(convites) { (nomeEvento, nomeConvidado) ->
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -88,9 +104,8 @@ fun ConvidadoHomeScreen(userEmail: String?) {
                                 elevation = CardDefaults.cardElevation(4.dp)
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
-                                    Text("Evento ID: $eventoId", style = MaterialTheme.typography.titleMedium)
-                                    // REQUER PRÓXIMO PASSO: Buscar nome real do evento no Room
-                                    Text("Depois podemos buscar mais detalhes no banco local (Room)")
+                                    Text("Evento: $nomeEvento", style = MaterialTheme.typography.titleMedium)
+                                    Text("Convidado: $nomeConvidado")
                                 }
                             }
                         }
