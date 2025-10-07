@@ -42,7 +42,10 @@ import com.arianesanga.event.ui.theme.ORANGE
 import com.arianesanga.event.ui.theme.WHITE
 
 @Composable
-fun Login(onLoginWithGoogle: () -> Unit) {
+fun Login(
+    onLoginWithGoogle: () -> Unit,
+    onLoginConvidado: () -> Unit // <-- adiciona este parâmetro pra lidar com o clique
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -99,7 +102,7 @@ fun Login(onLoginWithGoogle: () -> Unit) {
                 .padding(20.dp, 20.dp, 20.dp, 30.dp)
         )
 
-        // Botão removido do Row e adicionado diretamente na Column
+        // Botão de login com Google
         Button(
             onClick = { onLoginWithGoogle() },
             colors = ButtonDefaults.buttonColors(
@@ -107,7 +110,7 @@ fun Login(onLoginWithGoogle: () -> Unit) {
             ),
             shape = RoundedCornerShape(50),
             modifier = Modifier
-                .padding(horizontal = 20.dp) // Adicionado padding para centralizar o botão
+                .padding(horizontal = 20.dp)
                 .shadow(
                     elevation = 16.dp,
                     shape = RoundedCornerShape(50),
@@ -123,5 +126,30 @@ fun Login(onLoginWithGoogle: () -> Unit) {
                 color = WHITE
             )
         }
-    } // Fecha o Column
-} // Fecha o Login
+
+        Button(
+            onClick = { onLoginConvidado() },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent
+            ),
+            border = BorderStroke(2.dp, ORANGE),
+            shape = RoundedCornerShape(50),
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(50),
+                    spotColor = ORANGE
+                )
+                .fillMaxWidth()
+                .height(55.dp)
+        ) {
+            Text(
+                text = "Entrar como Convidado",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = ORANGE
+            )
+        }
+    }
+}

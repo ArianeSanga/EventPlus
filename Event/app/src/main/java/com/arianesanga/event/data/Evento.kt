@@ -11,5 +11,6 @@ data class Evento(
     val data: String,
     val local: String,
     val orcamento: Double,
-    val ownerUid: String? = null
+    val ownerUid: String? = null,
+    val fotoUri: String? = null
 )

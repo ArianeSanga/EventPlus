@@ -5,20 +5,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import com.arianesanga.event.ui.theme.EventTheme
+import com.arianesanga.event.views.ConvidadoLoginActivity
 import com.arianesanga.event.views.Login
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
-
-
-import androidx.activity.result.contract.ActivityResultContracts
-import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
 
@@ -30,39 +27,46 @@ class MainActivity : ComponentActivity() {
     ) { result ->
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
-            val account = task.getResult(ApiException::class.java)!!
-            firebaseAuthWithGoogle(account.idToken!!)
+            val account = task.getResult(ApiException::class.java)
+            account?.idToken?.let { firebaseAuthWithGoogle(it) }
         } catch (e: ApiException) {
-            // Login falhou, você pode mostrar uma mensagem de erro aqui
+            e.printStackTrace()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Inicializa o Firebase antes de qualquer uso
         FirebaseApp.initializeApp(this)
+        auth = FirebaseAuth.getInstance()
 
-        auth = Firebase.auth
-
-        //caso o usario ja estiver logado, ele vai direto para a tela HomeActivy
+        // Se usuário já estiver logado, vai direto para HomeActivity
         if (auth.currentUser != null) {
             startActivity(Intent(this, HomeActivity::class.java))
             finish()
+            return
         }
 
+        // Configuração do Google Sign-In
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
+        // Tela de login
         setContent {
             EventTheme {
                 Login(
                     onLoginWithGoogle = {
-                        val signInIntent = googleSignInClient.signInIntent
-                        googleSignInLauncher.launch(signInIntent)
+                        googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                    },
+                    onLoginConvidado = {
+                        val intent = Intent(this, ConvidadoLoginActivity::class.java)
+                        intent.putExtra("eventoId", 1) // teste, trocar para evento real
+                        startActivity(intent)
                     }
                 )
             }
@@ -78,7 +82,8 @@ class MainActivity : ComponentActivity() {
                     startActivity(intent)
                     finish()
                 } else {
-                    // Login falhou, você pode mostrar uma mensagem de erro aqui
+                    // Login falhou
+                    task.exception?.printStackTrace()
                 }
             }
     }
