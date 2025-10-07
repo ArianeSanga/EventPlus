@@ -2,10 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission
-        android:name="android.permission.READ_MEDIA_VISUAL"
-        tools:targetApi="upsideDownCake" />
-
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -15,23 +14,16 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Event"
-        tools:targetApi="34"> <activity android:name=".views.EventListActivity"
-        android:exported="false" />
+        tools:targetApi="34">
 
-        <activity
-            android:name=".HomeActivity"
-            android:exported="false" />
-
-        <activity android:name=".views.CreateEventActivity"
-            android:exported="false"/>
-
-        <activity android:name=".views.ProfileActivity" />
-
+        <activity android:name=".views.EventListActivity" android:exported="false" />
+        <activity android:name=".HomeActivity" android:exported="false" />
+        <activity android:name=".views.CreateEventActivity" android:exported="false"/>
+        <activity android:name=".views.ProfileActivity" android:exported="false" />
         <activity android:name=".views.TarefaActivity" android:exported="false" />
-
-        <activity android:name=".views.ConvidadoActivity" />
-        <activity android:name=".views.ConvidadoHomeActivity" />
-        <activity android:name=".views.ConvidadoLoginActivity" />
+        <activity android:name=".views.ConvidadoActivity" android:exported="false" />
+        <activity android:name=".views.ConvidadoHomeActivity" android:exported="false" />
+        <activity android:name=".views.ConvidadoLoginActivity" android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -39,7 +31,6 @@
             android:theme="@style/Theme.Event">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

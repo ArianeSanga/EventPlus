@@ -1,18 +1,25 @@
 package com.arianesanga.event.views
 
-import android.content.Intent
+import android.Manifest
+import android.app.DatePickerDialog
+import android.content.ContentValues
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.compose.setContent
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.border
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,30 +28,30 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import coil.compose.AsyncImage
-import com.arianesanga.event.data.Evento
+import coil.compose.rememberAsyncImagePainter
 import com.arianesanga.event.data.EventoDatabase
+import com.arianesanga.event.data.Evento
 import com.arianesanga.event.data.EventoRepository
 import com.arianesanga.event.data.EventoViewModel
 import com.arianesanga.event.data.EventoViewModelFactory
-import com.arianesanga.event.ui.theme.EventTheme
+import java.io.OutputStream
+import java.util.*
 
 class CreateEventActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Cria Repository e ViewModel
         val database = EventoDatabase.getDatabase(this)
         val repository = EventoRepository(database.eventoDao())
         val factory = EventoViewModelFactory(repository)
         val viewModel = ViewModelProvider(this, factory)[EventoViewModel::class.java]
 
-
         setContent {
-            EventTheme {
+            MaterialTheme {
                 CreateEventScreen(viewModel)
             }
         }
@@ -53,128 +60,156 @@ class CreateEventActivity : ComponentActivity() {
 
 @Composable
 fun CreateEventScreen(viewModel: EventoViewModel) {
-
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var eventName by remember { mutableStateOf("") }
-    var eventDescription by remember { mutableStateOf("") }
-    var eventBudget by remember { mutableStateOf("") }
-    var eventDate by remember { mutableStateOf("") }
-    var eventTime by remember { mutableStateOf("") }
-    var eventLocation by remember { mutableStateOf("") }
-
     val context = LocalContext.current
+    var nome by remember { mutableStateOf("") }
+    var descricao by remember { mutableStateOf("") }
+    var data by remember { mutableStateOf("") }
+    var local by remember { mutableStateOf("") }
+    var orcamento by remember { mutableStateOf("") }
+    var imagemUri by remember { mutableStateOf<Uri?>(null) }
 
-    // NOVO: Launcher que usa o Photo Picker. Não precisa de permissões!
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            // CRUCIAL: Solicitar persistência de acesso. Isso garante que o app
-            // possa exibir a imagem (via URI) após a seleção e mesmo após reiniciar.
-            val flag = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            context.contentResolver.takePersistableUriPermission(uri, flag)
+    val calendar = Calendar.getInstance()
 
-            imageUri = uri
+    // Permissão para acessar fotos
+    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+        Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (!granted) Toast.makeText(context, "Permissão negada", Toast.LENGTH_SHORT).show()
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(context, permission)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionLauncher.launch(permission)
         }
     }
 
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            imagemUri = it
+        }
+    }
 
     Column(
         modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            "Criar Novo Evento",
+            style = MaterialTheme.typography.headlineSmall,
+            color = Color(0xFF2E7D32)
+        )
 
-        // Imagem redonda
-        imageUri?.let { uri ->
-            AsyncImage(
-                model = uri,
-                contentDescription = "Foto do Evento",
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, Color.Gray, CircleShape),
-                contentScale = ContentScale.Crop
-            )
-        }
-
-        // O BOTÃO AGORA CHAMA O LAUNCHER DO PHOTO PICKER
-        Button(
-            onClick = {
-                imagePickerLauncher.launch(
-                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                )
-            }
+        // Imagem redonda estilo perfil
+        Box(
+            modifier = Modifier
+                .size(120.dp)
+                .clip(CircleShape)
+                .background(Color.LightGray)
+                .clickable { imagePickerLauncher.launch("image/*") },
+            contentAlignment = Alignment.Center
         ) {
-            Text("Escolher Foto do Evento")
+            if (imagemUri != null) {
+                Image(
+                    painter = rememberAsyncImagePainter(imagemUri),
+                    contentDescription = "Imagem do evento",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Text("Adicionar Foto", color = Color.White)
+            }
         }
 
-        TextField(
-            value = eventName,
-            onValueChange = { eventName = it },
+        // Campos do evento
+        OutlinedTextField(
+            value = nome,
+            onValueChange = { nome = it },
             label = { Text("Nome do Evento") },
             modifier = Modifier.fillMaxWidth()
         )
-        TextField(
-            value = eventDescription,
-            onValueChange = { eventDescription = it },
-            label = { Text("Descrição do Evento") },
+
+        OutlinedTextField(
+            value = descricao,
+            onValueChange = { descricao = it },
+            label = { Text("Descrição") },
             modifier = Modifier.fillMaxWidth()
         )
-        TextField(
-            value = eventBudget,
-            onValueChange = { eventBudget = it },
-            label = { Text("Orçamento (R$)") },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        TextField(
-            value = eventDate,
-            onValueChange = { eventDate = it },
-            label = { Text("Data (dd/mm/aaaa)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        TextField(
-            value = eventTime,
-            onValueChange = { eventTime = it },
-            label = { Text("Hora (hh:mm)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        TextField(
-            value = eventLocation,
-            onValueChange = { eventLocation = it },
+
+        OutlinedTextField(
+            value = local,
+            onValueChange = { local = it },
             label = { Text("Local") },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = orcamento,
+            onValueChange = { orcamento = it.filter { c -> c.isDigit() || c == '.' } },
+            label = { Text("Orçamento (R$)") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
+        // Seletor de data
         Button(
             onClick = {
-                // Cria objeto Evento
-                val evento = Evento(
-                    nome = eventName,
-                    descricao = eventDescription,
-                    // Combinando data e hora como você já fazia
-                    data = "Data: $eventDate\nHora: $eventTime",
-                    local = eventLocation,
-                    orcamento = eventBudget.toDoubleOrNull() ?: 0.0
-                )
-
-                // Adiciona no banco via ViewModel
-                viewModel.adicionarEvento(evento)
-
-                // Feedback
-                Toast.makeText(context, "Evento criado com sucesso!", Toast.LENGTH_SHORT).show()
-
-                // Volta para a HomeActivity
-                (context as? ComponentActivity)?.finish()
+                DatePickerDialog(
+                    context,
+                    { _, year, month, dayOfMonth ->
+                        data = "$dayOfMonth/${month + 1}/$year"
+                    },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
             },
-            modifier = Modifier.fillMaxWidth()
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF66BB6A))
         ) {
-            Text("Criar Evento")
+            Text(if (data.isEmpty()) "Selecionar Data" else data)
+        }
+
+        // Botão salvar evento
+        Button(
+            onClick = {
+                when {
+                    nome.isBlank() -> Toast.makeText(context, "Digite o nome do evento", Toast.LENGTH_SHORT).show()
+                    descricao.isBlank() -> Toast.makeText(context, "Digite a descrição", Toast.LENGTH_SHORT).show()
+                    local.isBlank() -> Toast.makeText(context, "Digite o local", Toast.LENGTH_SHORT).show()
+                    data.isBlank() -> Toast.makeText(context, "Selecione a data", Toast.LENGTH_SHORT).show()
+                    orcamento.isBlank() -> Toast.makeText(context, "Digite o orçamento", Toast.LENGTH_SHORT).show()
+                    else -> {
+                        val evento = Evento(
+                            nome = nome,
+                            descricao = descricao,
+                            data = data,
+                            local = local,
+                            orcamento = orcamento.toDoubleOrNull() ?: 0.0,
+                            fotoUri = imagemUri?.toString() ?: ""
+                        )
+                        viewModel.adicionarEvento(evento)
+                        Toast.makeText(context, "Evento criado com sucesso!", Toast.LENGTH_SHORT).show()
+
+                        (context as? ComponentActivity)?.finish()
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+        ) {
+            Text("Salvar Evento", color = Color.White)
+
         }
     }
 }
