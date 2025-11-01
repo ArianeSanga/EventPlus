@@ -14,8 +14,7 @@ import com.arianesanga.event.views.CreateEventActivity
 import com.arianesanga.event.views.EventListActivity
 import com.arianesanga.event.views.HomeScreenStyled
 import com.arianesanga.event.views.ProfileActivity
-import com.arianesanga.event.views.OrganizerScreens // Se não for usado, remova este import.
-
+// import com.arianesanga.event.views.OrganizerScreens // Se não for usado, remova este import.
 
 class HomeActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,10 +35,7 @@ class HomeActivity : ComponentActivity() {
         setContent {
             EventTheme {
                 HomeScreenStyled(
-                    // MANTEMOS O viewModel AQUI para COMPILAR.
-                    // O problema da lista aparecer está DENTRO do HomeScreenStyled.
                     viewModel = viewModel,
-
                     onCreateEventClick = {
                         startActivity(Intent(this@HomeActivity, CreateEventActivity::class.java))
                     },

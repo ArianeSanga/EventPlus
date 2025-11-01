@@ -24,6 +24,7 @@
         <activity android:name=".views.ConvidadoActivity" android:exported="false" />
         <activity android:name=".views.ConvidadoHomeActivity" android:exported="false" />
         <activity android:name=".views.ConvidadoLoginActivity" android:exported="false" />
+        <activity android:name=".views.CadastroActivity" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
