@@ -1,0 +1,22 @@
+# IntelliJ
+*.iml
+.idea/
+misc.xml
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log/OS Files
+*.log
+
+# macOS
+.DS_Store
+
+# Gradle files
+.gradle/
+build/
+
+# Android Studio generated files and folders
+captures/
+.cxx/
+.externalNativeBuild/
