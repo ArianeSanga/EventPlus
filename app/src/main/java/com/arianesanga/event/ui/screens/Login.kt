@@ -10,6 +10,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -19,11 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arianesanga.event.R
@@ -38,147 +43,77 @@ fun Login(
     errorMessage: String?,
     onLoginWithGoogle: () -> Unit,
     onLoginConvidado: () -> Unit,
-    onLoginWithEmailPassword: (email: String, password: String) -> Unit,
+    onNavigateToEmailLogin: () -> Unit,
     onNavigateToCadastro: () -> Unit
 ) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(
-                        GRAY900,
-                        BROWN900,
-                        GRAY900,
-                        GRAY900
-                    )
+                    colors = listOf(GRAY900, BROWN900, GRAY900, GRAY900)
                 )
             )
             .verticalScroll(rememberScrollState())
-            // Adiciona padding geral para não colar nas bordas
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 40.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
 
-        Spacer(modifier = Modifier.height(32.dp))
+        // *****************
+        // 1. SPACER DE PESO 1f: Empurra o bloco de conteúdo para o meio da tela.
+        // *****************
+        Spacer(modifier = Modifier.weight(1f))
 
-        // Logo sutil no topo
+        // --- NOVO: NOME DO APP (EventPlus) ACIMA DA IMAGEM ---
+        Text(
+            text = "EventPlus",
+            color = WHITE, // Cor branca para contraste com o fundo escuro
+            fontSize = 36.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 20.dp) // Espaçamento entre o nome e a logo
+        )
+
+        // --- Logo Principal (Movida para o Meio) ---
         Image(
             painter = painterResource(id = R.drawable.logo),
-            contentDescription = "Logo do Event App",
+            contentDescription = "Logo Principal",
             modifier = Modifier
-                .size(100.dp), // Tamanho bem menor e mais profissional
-            contentScale = ContentScale.Fit // Fit é melhor para logos
+                .size(300.dp)
+                .padding(bottom = 60.dp), // Espaçamento abaixo da imagem
+            contentScale = ContentScale.Fit
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Título principal
-        Text(
-            text = "Bem-vindo de Volta!",
-            color = WHITE,
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        // Subtítulo
-        Text(
-            text = "Acesse para organizar seus eventos",
-            color = WHITE.copy(alpha = 0.8f), // Cor mais suave
-            fontSize = 16.sp,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // CAMPO EMAIL
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            textStyle = LocalTextStyle.current.copy(color = WHITE),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp), // Canto mais suave
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ORANGE,
-                unfocusedBorderColor = ORANGE,
-                focusedLabelColor = ORANGE,
-                unfocusedLabelColor = ORANGE,
-                cursorColor = ORANGE
-            ),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp)) // Espaçamento consistente
-
-        // CAMPO SENHA
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Senha") },
-            textStyle = LocalTextStyle.current.copy(color = WHITE),
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp), // Canto mais suave
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = ORANGE,
-                unfocusedBorderColor = ORANGE,
-                focusedLabelColor = ORANGE,
-                unfocusedLabelColor = ORANGE,
-                cursorColor = ORANGE
-            ),
-            singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible)
-                    Icons.Filled.VisibilityOff
-                else Icons.Filled.Visibility
-
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, "Mostrar/Ocultar senha", tint = ORANGE) // Cor do ícone
-                }
-            }
-        )
-
-        // MENSAGEM DE ERRO
+        // MENSAGEM DE ERRO (Google Login)
         if (errorMessage != null) {
-            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = errorMessage,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp)) // Mais espaço antes do botão
-
-        // BOTÃO DE LOGIN (Ação Primária)
+        // BOTÃO 1: ENTRAR COM E-MAIL
         Button(
-            onClick = { onLoginWithEmailPassword(email, password) },
+            onClick = onNavigateToEmailLogin,
             enabled = !isLoading,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = ORANGE
-            ),
-            shape = RoundedCornerShape(12.dp), // Canto mais suave
+            colors = ButtonDefaults.buttonColors(containerColor = ORANGE),
+            shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp)
-            // Sombra removida para um look mais limpo (Button já tem elevação padrão)
         ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = WHITE,
-                    strokeWidth = 3.dp
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    imageVector = Icons.Filled.Email,
+                    contentDescription = "Entrar com E-mail",
+                    tint = WHITE,
+                    modifier = Modifier.size(24.dp)
                 )
-            } else {
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Entrar com E-mail",
                     fontSize = 18.sp,
@@ -190,26 +125,33 @@ fun Login(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // BOTÃO DE LOGIN COM GOOGLE (Ação Secundária)
-        OutlinedButton( // Alterado para OutlinedButton para diferenciar
+        // BOTÃO 2: ENTRAR COM GOOGLE
+        OutlinedButton(
             onClick = { onLoginWithGoogle() },
             enabled = !isLoading,
             shape = RoundedCornerShape(12.dp),
-            border = BorderStroke(1.dp, ORANGE), // Borda com a cor principal
+            border = BorderStroke(1.dp, WHITE), // Borda Branca para visibilidade
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = WHITE), // Texto/Ícone Branco
             modifier = Modifier
                 .fillMaxWidth()
                 .height(55.dp)
         ) {
-            // Ícone do Google (Idealmente, você adicionaria o drawable do Google aqui)
-            // Icon(painter = painterResource(id = R.drawable.ic_google), contentDescription = null, modifier = Modifier.size(22.dp))
-            // Spacer(modifier = Modifier.width(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
+                Icon(
+                    imageVector = Icons.Filled.AccountCircle,
+                    contentDescription = "Entrar com Google",
+                    tint = WHITE,
+                    modifier = Modifier.size(24.dp)
+                )
 
-            Text(
-                text = "Entrar com Google",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = WHITE // Texto branco
-            )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Entrar com Google",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = WHITE
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -221,7 +163,7 @@ fun Login(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Ainda não tem conta? ",
+                text = "Não tem uma conta? ",
                 color = WHITE.copy(alpha = 0.8f),
                 fontSize = 16.sp
             )
@@ -241,10 +183,40 @@ fun Login(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // *****************
+        // 2. SPACER DE PESO 1f: Empurra o rodapé para o final da tela, mantendo a centralização.
+        // *****************
+        Spacer(modifier = Modifier.weight(1f))
 
+        // --- TERMOS E CONDIÇÕES (Rodapé) ---
+        val annotatedString = buildAnnotatedString {
+            append("Ao continuar, você concorda com nossos ")
+            withStyle(style = SpanStyle(
+                textDecoration = TextDecoration.Underline,
+                fontWeight = FontWeight.Bold,
+                color = ORANGE
+            )
+            ) {
+                append("Termos de Uso")
+            }
+            append(" e ")
+            withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline, fontWeight = FontWeight.Bold, color = ORANGE)) {
+                append("Política de Privacidade")
+            }
+            append(".")
+        }
 
-
-        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = annotatedString,
+            color = WHITE.copy(alpha = 0.7f),
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 16.dp)
+                .clickable {
+                    // Ação ao clicar nos termos
+                }
+        )
     }
 }

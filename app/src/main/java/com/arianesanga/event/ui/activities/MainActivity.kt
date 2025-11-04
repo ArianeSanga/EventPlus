@@ -26,12 +26,9 @@ class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
 
-    // --- NOVO ESTADO (Nível da Classe) ---
-    // Precisamos que o Composable (Login) e os callbacks (launcher)
-    // acessem as mesmas variáveis.
+    // Estado para controle de loading e erros (usado no Google Sign-In)
     private var isLoading by mutableStateOf(false)
     private var errorMessage by mutableStateOf<String?>(null)
-    // --- FIM NOVO ESTADO ---
 
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -43,11 +40,10 @@ class MainActivity : ComponentActivity() {
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 errorMessage = "Falha no login com Google: ${e.message}"
-                isLoading = false // Resetar
+                isLoading = false
             }
         } else {
-            // Usuário cancelou ou houve outro erro
-            isLoading = false // Resetar
+            isLoading = false
         }
     }
 
@@ -71,13 +67,12 @@ class MainActivity : ComponentActivity() {
         setContent {
             EventTheme {
                 Login(
-                    // Passa o estado atual para o Composable
                     isLoading = isLoading,
                     errorMessage = errorMessage,
 
                     onLoginWithGoogle = {
-                        isLoading = true // Define loading
-                        errorMessage = null // Limpa erro
+                        isLoading = true
+                        errorMessage = null
                         googleSignInLauncher.launch(googleSignInClient.signInIntent)
                     },
                     onLoginConvidado = {
@@ -85,7 +80,7 @@ class MainActivity : ComponentActivity() {
                         intent.putExtra("eventoId", 1)
                         startActivity(intent)
                     },
-                    onLoginWithEmailPassword = ::firebaseAuthWithEmailPassword, // Passa a função direto
+                    onNavigateToEmailLogin = ::navigateToEmailLoginScreen, // <<< NOVA CHAMADA
                     onNavigateToCadastro = ::navigateToCadastroScreen
                 )
             }
@@ -95,13 +90,13 @@ class MainActivity : ComponentActivity() {
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
-            .addOnCompleteListener(this) { task: Task<AuthResult> ->
+            .addOnCompleteListener(this) { task: com.google.android.gms.tasks.Task<AuthResult> ->
                 if (task.isSuccessful) {
                     navigateToHome()
                 } else {
                     errorMessage = "Falha na Autenticação com Google."
                 }
-                isLoading = false // Reseta em sucesso ou falha
+                isLoading = false
             }
     }
 
@@ -111,33 +106,15 @@ class MainActivity : ComponentActivity() {
         finish()
     }
 
-    /**
-     * Tenta logar o usuário com email e senha no Firebase.
-     * AGORA ATUALIZA O ESTADO 'isLoading' E 'errorMessage'.
-     */
-    private fun firebaseAuthWithEmailPassword(email: String, password: String) {
-        if (email.isBlank() || password.isBlank()) {
-            errorMessage = "Preencha o Email e a Senha para logar."
-            return // Não seta loading
-        }
-
-        isLoading = true // Começa o loading
-        errorMessage = null // Limpa erro
-
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    navigateToHome()
-                } else {
-                    val error = task.exception?.message ?: "Erro desconhecido ao logar."
-                    errorMessage = "Falha no Login: $error"
-                }
-                isLoading = false // Reseta em sucesso ou falha
-            }
-    }
+    // Função de login com email/senha REMOVIDA daqui
 
     private fun navigateToCadastroScreen() {
         val intent = Intent(this, CadastroActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToEmailLoginScreen() {
+        val intent = Intent(this, EmailLoginActivity::class.java)
         startActivity(intent)
     }
 }
