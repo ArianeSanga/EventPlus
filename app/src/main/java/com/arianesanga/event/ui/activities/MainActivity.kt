@@ -15,7 +15,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
@@ -80,8 +79,8 @@ class MainActivity : ComponentActivity() {
                         intent.putExtra("eventoId", 1)
                         startActivity(intent)
                     },
-                    onNavigateToEmailLogin = ::navigateToEmailLoginScreen, // <<< NOVA CHAMADA
-                    onNavigateToCadastro = ::navigateToCadastroScreen
+                    onNavigateToLogin = ::navigateToLoginScreen, // <<< NOVA CHAMADA
+                    onNavigateToCadastro = ::navigateToRegisterScreen
                 )
             }
         }
@@ -108,13 +107,13 @@ class MainActivity : ComponentActivity() {
 
     // Função de login com email/senha REMOVIDA daqui
 
-    private fun navigateToCadastroScreen() {
-        val intent = Intent(this, CadastroActivity::class.java)
+    private fun navigateToRegisterScreen() {
+        val intent = Intent(this, RegisterActivity::class.java)
         startActivity(intent)
     }
 
-    private fun navigateToEmailLoginScreen() {
-        val intent = Intent(this, EmailLoginActivity::class.java)
+    private fun navigateToLoginScreen() {
+        val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
     }
 }

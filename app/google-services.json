@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "262271489794-cjt2k73ug6t8i8o1jqqt5mlh0u94bvem.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.arianesanga.event",
+            "certificate_hash": "60e670e291b78c246c299c5ae369c5c605972b77"
+          }
+        },
+        {
+          "client_id": "262271489794-derthb64gge7k0idlei6cchc9ma7s562.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.arianesanga.event",
+            "certificate_hash": "bfadbc19fb1080a5f39ceda7ff8fc91f4e924905"
+          }
+        },
+        {
           "client_id": "262271489794-rot3nfnudokhlficjof477edlilcbl0o.apps.googleusercontent.com",
           "client_type": 3
         }
