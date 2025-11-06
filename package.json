@@ -1,0 +1,26 @@
+{
+  "name": "eventplus",
+  "version": "1.0.0",
+  "description": "Event+ é um aplicativo móvel desenvolvido para ajudar usuários a **organizar festas e eventos** de forma prática e colaborativa.  \r Com ele, é possível cadastrar eventos, gerenciar convidados, criar tarefas, compartilhar informações e receber lembretes automáticos.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArianeSanga/EventPlus.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ArianeSanga/EventPlus/issues"
+  },
+  "homepage": "https://github.com/ArianeSanga/EventPlus#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "nodemailer": "^7.0.10"
+  }
+}

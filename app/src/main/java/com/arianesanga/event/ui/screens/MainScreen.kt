@@ -10,31 +10,28 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arianesanga.event.R
-import com.arianesanga.event.ui.theme.BROWN900
-import com.arianesanga.event.ui.theme.GRAY900
-import com.arianesanga.event.ui.theme.ORANGE
+import com.arianesanga.event.ui.theme.MEDIUMBLUE
+import com.arianesanga.event.ui.theme.DARKBLUE
+import com.arianesanga.event.ui.theme.LIGHTBLUE
+import com.arianesanga.event.ui.theme.PINK
 import com.arianesanga.event.ui.theme.WHITE
 
 @Composable
@@ -43,7 +40,7 @@ fun Login(
     errorMessage: String?,
     onLoginWithGoogle: () -> Unit,
     onLoginConvidado: () -> Unit,
-    onNavigateToEmailLogin: () -> Unit,
+    onNavigateToLogin: () -> Unit,
     onNavigateToCadastro: () -> Unit
 ) {
     Column(
@@ -51,7 +48,7 @@ fun Login(
             .fillMaxSize()
             .background(
                 brush = Brush.linearGradient(
-                    colors = listOf(GRAY900, BROWN900, GRAY900, GRAY900)
+                    colors = listOf(DARKBLUE, MEDIUMBLUE, DARKBLUE, DARKBLUE)
                 )
             )
             .verticalScroll(rememberScrollState())
@@ -66,11 +63,18 @@ fun Login(
 
         // --- NOVO: NOME DO APP (EventPlus) ACIMA DA IMAGEM ---
         Text(
-            text = "EventPlus",
-            color = WHITE, // Cor branca para contraste com o fundo escuro
-            fontSize = 36.sp,
+            text = "Eventplus",
+            color = WHITE,
+            fontSize = 40.sp,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 20.dp) // Espaçamento entre o nome e a logo
+            modifier = Modifier.padding(bottom = 20.dp),
+            style = LocalTextStyle.current.copy(
+                shadow = Shadow(
+                    color = LIGHTBLUE,        // cor da sombra (brilho)
+                    offset = Offset(0f, 0f),  // deslocamento da sombra
+                    blurRadius = 20f          // intensidade do brilho
+                )
+            )
         )
 
         // --- Logo Principal (Movida para o Meio) ---
@@ -78,8 +82,8 @@ fun Login(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "Logo Principal",
             modifier = Modifier
-                .size(300.dp)
-                .padding(bottom = 60.dp), // Espaçamento abaixo da imagem
+                .size(400.dp)
+                .padding(bottom = 32.dp), // Espaçamento abaixo da imagem
             contentScale = ContentScale.Fit
         )
 
@@ -98,9 +102,9 @@ fun Login(
 
         // BOTÃO 1: ENTRAR COM E-MAIL
         Button(
-            onClick = onNavigateToEmailLogin,
+            onClick = onNavigateToLogin,
             enabled = !isLoading,
-            colors = ButtonDefaults.buttonColors(containerColor = ORANGE),
+            colors = ButtonDefaults.buttonColors(containerColor = PINK),
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,15 +113,14 @@ fun Login(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 Icon(
                     imageVector = Icons.Filled.Email,
-                    contentDescription = "Entrar com E-mail",
+                    contentDescription = "ENTRAR COM E-MAIL",
                     tint = WHITE,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Entrar com E-mail",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "ENTRAR COM E-MAIL",
+                    fontSize = 16.sp,
                     color = WHITE
                 )
             }
@@ -137,18 +140,16 @@ fun Login(
                 .height(55.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
-                Icon(
-                    imageVector = Icons.Filled.AccountCircle,
-                    contentDescription = "Entrar com Google",
-                    tint = WHITE,
-                    modifier = Modifier.size(24.dp)
+                Image(
+                    painter = painterResource(id = R.drawable.google_icon),
+                    contentDescription = "ENTRAR COM GOOGLE",
+                    modifier = Modifier.size(20.dp) // tamanho do ícone
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Entrar com Google",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "ENTRAR COM GOOGLE",
+                    fontSize = 16.sp,
                     color = WHITE
                 )
             }
@@ -169,10 +170,9 @@ fun Login(
             )
             Text(
                 text = "Cadastre-se",
-                color = ORANGE,
+                color = PINK,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                textDecoration = TextDecoration.Underline,
                 modifier = Modifier
                     .clickable(
                         enabled = !isLoading,
@@ -188,35 +188,48 @@ fun Login(
         // *****************
         Spacer(modifier = Modifier.weight(1f))
 
-        // --- TERMOS E CONDIÇÕES (Rodapé) ---
-        val annotatedString = buildAnnotatedString {
-            append("Ao continuar, você concorda com nossos ")
-            withStyle(style = SpanStyle(
-                textDecoration = TextDecoration.Underline,
-                fontWeight = FontWeight.Bold,
-                color = ORANGE
-            )
-            ) {
-                append("Termos de Uso")
-            }
-            append(" e ")
-            withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline, fontWeight = FontWeight.Bold, color = ORANGE)) {
-                append("Política de Privacidade")
-            }
-            append(".")
-        }
-
-        Text(
-            text = annotatedString,
-            color = WHITE.copy(alpha = 0.7f),
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(vertical = 15.dp)
                 .clickable {
-                    // Ação ao clicar nos termos
+                    // Ação ao clicar nos termos (opcional)
                 }
-        )
+        ) {
+            // Linha 1
+            Text(
+                text = "Ao continuar, você concorda com nossos",
+                color = WHITE.copy(alpha = 0.7f),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+
+            // Linha 2
+            Text(
+                text = buildAnnotatedString {
+                    withStyle(
+                        style = SpanStyle(
+                            fontWeight = FontWeight.Bold,
+                            color = PINK
+                        )
+                    ) {
+                        append("Termos de Uso")
+                    }
+                    append(" e ")
+                    withStyle(
+                        style = SpanStyle(
+                            fontWeight = FontWeight.Bold,
+                            color = PINK
+                        )
+                    ) {
+                        append("Política de Privacidade")
+                    }
+                },
+                color = WHITE.copy(alpha = 0.7f),
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
