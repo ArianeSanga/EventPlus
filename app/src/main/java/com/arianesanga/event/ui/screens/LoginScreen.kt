@@ -44,9 +44,8 @@ fun LoginScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent, // transparente
-                    titleContentColor = WHITE,
-                    scrolledContainerColor = Color.Transparent
+                    containerColor = Color.Transparent,
+                    titleContentColor = WHITE
                 )
             )
         }
@@ -72,18 +71,11 @@ fun LoginScreen(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // === CAMPO EMAIL ===
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
                 placeholder = { Text("EMAIL", color = WHITE.copy(alpha = 0.6f)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Email,
-                        contentDescription = "Ícone de e-mail",
-                        tint = LIGHTBLUE
-                    )
-                },
+                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null, tint = LIGHTBLUE) },
                 textStyle = LocalTextStyle.current.copy(color = WHITE),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -103,22 +95,15 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // === CAMPO SENHA ===
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
                 placeholder = { Text("SENHA", color = WHITE.copy(alpha = 0.6f)) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Key,
-                        contentDescription = "Ícone de senha",
-                        tint = LIGHTBLUE
-                    )
-                },
+                leadingIcon = { Icon(Icons.Filled.Key, contentDescription = null, tint = LIGHTBLUE) },
                 trailingIcon = {
                     val image = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = "Mostrar/Ocultar senha", tint = LIGHTBLUE)
+                        Icon(imageVector = image, contentDescription = null, tint = LIGHTBLUE)
                     }
                 },
                 textStyle = LocalTextStyle.current.copy(color = WHITE),
@@ -141,14 +126,11 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // BOTÃO DE LOGIN
             Button(
                 onClick = {
                     if (email.isNotBlank() && password.isNotBlank()) {
                         isLoading = true
-                        onLogin(email, password) {
-                            isLoading = false
-                        }
+                        onLogin(email, password) { isLoading = false }
                     } else {
                         Toast.makeText(context, "Preencha todos os campos.", Toast.LENGTH_SHORT).show()
                     }
@@ -156,37 +138,25 @@ fun LoginScreen(
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = LIGHTBLUE),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(55.dp)
+                modifier = Modifier.fillMaxWidth().height(55.dp)
             ) {
                 if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = WHITE,
-                        strokeWidth = 3.dp
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = WHITE, strokeWidth = 3.dp)
                 } else {
-                    Text("ENTRAR COM E-MAIL", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = WHITE)
+                    Text("ENTRAR", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = WHITE)
                 }
             }
 
-            // === TEXTO "ESQUECEU A SENHA?" ===
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
             ) {
+                Text("Esqueceu a senha? ", color = WHITE)
                 Text(
-                    text = "Esqueceu a senha? ",
-                    color = WHITE,
-                    fontSize = 15.sp
-                )
-                Text(
-                    text = "Clique aqui",
+                    "Clique aqui",
                     color = LIGHTBLUE,
-                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable { onForgotPassword() }
                 )

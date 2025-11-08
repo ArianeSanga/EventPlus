@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arianesanga.event.R
+import com.arianesanga.event.ui.theme.DARKBLUE
 import com.arianesanga.event.ui.theme.PINK
 
 @Composable
@@ -28,7 +29,7 @@ fun TopAppBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(70.dp)
             .background(PINK)
             .padding(horizontal = 8.dp)
     ) {
@@ -43,7 +44,7 @@ fun TopAppBar(
                     imageVector = Icons.Filled.ArrowBackIos,
                     contentDescription = "Voltar",
                     tint = Color.White,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(23.dp)
                 )
             }
         }

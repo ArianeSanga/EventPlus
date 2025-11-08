@@ -1,10 +1,7 @@
 package com.arianesanga.event.ui.screens
 
-import android.Manifest
 import android.app.DatePickerDialog
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,94 +19,60 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
-import com.arianesanga.event.data.model.Evento
 import com.arianesanga.event.ui.activities.CreateEventActivity
-import com.arianesanga.event.ui.activities.HomeActivity
-import com.arianesanga.event.viewmodels.EventoViewModel
+import com.arianesanga.event.ui.activities.ProfileActivity
 import java.util.*
 
 @Composable
 fun CreateEventScreen(
-    viewModel: EventoViewModel,
-    onFinish: () -> Unit
+    onSave: (String, String, String, String, Double, String?) -> Unit,
+    onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var nome by remember { mutableStateOf("") }
-    var descricao by remember { mutableStateOf("") }
-    var data by remember { mutableStateOf("") }
-    var local by remember { mutableStateOf("") }
-    var orcamento by remember { mutableStateOf("") }
-    var imagemUri by remember { mutableStateOf<Uri?>(null) }
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var budget by remember { mutableStateOf("") }
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
 
     val calendar = Calendar.getInstance()
-
-    // === Permissões ===
-    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-        Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            if (!granted)
-                Toast.makeText(context, "Permissão negada", Toast.LENGTH_SHORT).show()
-        }
-    )
-
-    LaunchedEffect(Unit) {
-        if (ContextCompat.checkSelfPermission(context, permission)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            permissionLauncher.launch(permission)
-        }
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        imageUri = uri
     }
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri -> uri?.let { imagemUri = it } }
-
-    // === Layout da tela ===
     Scaffold(
         topBar = {
             TopAppBar(
-                title = "Criar evento",
+                title = "criar evento",
                 showBackButton = true,
-                onBack = { onFinish() }
+                onBack = onBack
             )
         },
-        bottomBar = {
-            BottomMenu(context, currentActivity = CreateEventActivity::class.java) // ou sua lógica de navegação
-        }
+        bottomBar = { BottomMenu(context, currentActivity = CreateEventActivity::class.java) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(paddingValues)
+                .fillMaxSize()
                 .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                "Criar Novo Evento",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color(0xFF2E7D32)
-            )
-
-            // === Imagem ===
             Box(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
                     .background(Color.LightGray)
-                    .clickable { imagePickerLauncher.launch("image/*") },
+                    .clickable { imagePicker.launch("image/*") },
                 contentAlignment = Alignment.Center
             ) {
-                if (imagemUri != null) {
+                if (imageUri != null) {
                     Image(
-                        painter = rememberAsyncImagePainter(imagemUri),
-                        contentDescription = "Imagem do evento",
-                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        painter = rememberAsyncImagePainter(imageUri),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 } else {
@@ -117,75 +80,34 @@ fun CreateEventScreen(
                 }
             }
 
-            // === Campos ===
-            OutlinedTextField(
-                value = nome,
-                onValueChange = { nome = it },
-                label = { Text("Nome do Evento") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nome do Evento") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = description, onValueChange = { description = it }, label = { Text("Descrição") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = location, onValueChange = { location = it }, label = { Text("Local") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(value = budget, onValueChange = { budget = it.filter { c -> c.isDigit() || c == '.' } }, label = { Text("Orçamento (R$)") }, modifier = Modifier.fillMaxWidth())
 
-            OutlinedTextField(
-                value = descricao,
-                onValueChange = { descricao = it },
-                label = { Text("Descrição") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Button(onClick = {
+                DatePickerDialog(context, { _, y, m, d -> date = "$d/${m + 1}/$y" },
+                    calendar.get(Calendar.YEAR),
+                    calendar.get(Calendar.MONTH),
+                    calendar.get(Calendar.DAY_OF_MONTH)
+                ).show()
+            }) { Text(if (date.isEmpty()) "Selecionar Data" else date) }
 
-            OutlinedTextField(
-                value = local,
-                onValueChange = { local = it },
-                label = { Text("Local") },
-                modifier = Modifier.fillMaxWidth()
-            )
+            var isSaving by remember { mutableStateOf(false) }
 
-            OutlinedTextField(
-                value = orcamento,
-                onValueChange = { orcamento = it.filter { c -> c.isDigit() || c == '.' } },
-                label = { Text("Orçamento (R$)") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // === Seletor de data ===
             Button(
                 onClick = {
-                    DatePickerDialog(
-                        context,
-                        { _, year, month, dayOfMonth ->
-                            data = "$dayOfMonth/${month + 1}/$year"
-                        },
-                        calendar.get(Calendar.YEAR),
-                        calendar.get(Calendar.MONTH),
-                        calendar.get(Calendar.DAY_OF_MONTH)
-                    ).show()
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF66BB6A))
-            ) {
-                Text(if (data.isEmpty()) "Selecionar Data" else data)
-            }
+                    if (isSaving) return@Button
+                    isSaving = true
 
-            // === Botão Salvar ===
-            Button(
-                onClick = {
-                    when {
-                        nome.isBlank() -> showToast(context, "Digite o nome do evento")
-                        descricao.isBlank() -> showToast(context, "Digite a descrição")
-                        local.isBlank() -> showToast(context, "Digite o local")
-                        data.isBlank() -> showToast(context, "Selecione a data")
-                        orcamento.isBlank() -> showToast(context, "Digite o orçamento")
-                        else -> {
-                            val evento = Evento(
-                                nome = nome,
-                                descricao = descricao,
-                                data = data,
-                                local = local,
-                                orcamento = orcamento.toDoubleOrNull() ?: 0.0,
-                                fotoUri = imagemUri?.toString() ?: ""
-                            )
-                            viewModel.adicionarEvento(evento)
-                            showToast(context, "Evento criado com sucesso!")
-                            onFinish()
-                        }
+                    if (name.isNotBlank() && description.isNotBlank() && location.isNotBlank() &&
+                        date.isNotBlank() && budget.isNotBlank()) {
+
+                        onSave(name, description, date, location, budget.toDoubleOrNull() ?: 0.0, imageUri?.toString())
+
+                    } else {
+                        Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
+                        isSaving = false
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -195,8 +117,4 @@ fun CreateEventScreen(
             }
         }
     }
-}
-
-private fun showToast(context: android.content.Context, message: String) {
-    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }

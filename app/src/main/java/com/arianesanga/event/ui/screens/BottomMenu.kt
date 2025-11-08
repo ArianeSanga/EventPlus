@@ -27,7 +27,7 @@ data class BottomMenuItem(
 @Composable
 fun BottomMenu(context: Context, currentActivity: Class<*>) {
     // Aqui definimos a altura da barra apenas uma vez na tela
-    val alturaBarra = 65
+    val alturaBarra = 70
 
     BottomMenu(context, currentActivity, alturaBarra)
 }
@@ -71,10 +71,10 @@ private fun BottomMenu(
                             Icon(
                                 painter = item.icon,
                                 contentDescription = null,
-                                tint = if (selectedIndex == index) BLACK else Color.LightGray,
+                                tint = if (selectedIndex == index) BLACK else Color.White,
                                 modifier = Modifier.size(item.iconSizeDp.dp)
                             )
-                            Spacer(modifier = Modifier.height(1.dp))
+                            Spacer(modifier = Modifier.height(2.dp))
                             Box(
                                 modifier = Modifier
                                     .size(6.dp)
