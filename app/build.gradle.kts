@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.arianesanga.event"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.arianesanga.event"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
@@ -72,6 +72,10 @@ dependencies {
     // 🧩 Room (banco local)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
     kapt("androidx.room:room-compiler:2.6.1")
 
     // 🧪 Testes

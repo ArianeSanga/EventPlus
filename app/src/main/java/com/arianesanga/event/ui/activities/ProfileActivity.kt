@@ -14,6 +14,7 @@ import com.arianesanga.event.ui.screens.ProfileScreen
 import com.arianesanga.event.ui.theme.EventTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.arianesanga.event.ui.activities.LoginActivity
 
 class ProfileActivity : ComponentActivity() {
 
@@ -40,11 +41,24 @@ class ProfileActivity : ComponentActivity() {
     private fun loadProfileScreen() {
         setContent {
             EventTheme {
+                // ** A CHAMA DEVE SER AQUI, INCLUINDO TODOS OS PARÂMETROS **
                 ProfileScreen(
-                    onLogout = { logout() },
-                    onEditProfile = { openEditProfile() },
+                    onLogout = {
+                        // 1. Faz o logout no Firebase
+                        auth.signOut() // Use 'auth' que já está declarado
+
+                        // 2. Inicia a Activity de Login e limpa a pilha
+                        val intent = Intent(this@ProfileActivity, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+
+                        // 3. Encerra a ProfileActivity para que não fique na pilha (evita a tela branca)
+                        finish()
+                    },
+                    // Adicione os outros parâmetros que o ProfileScreen espera:
+                    onEditProfile = ::openEditProfile,
                     refreshKey = refreshProfile,
-                    onBack = { finish() }
+                    onBack = ::finish // Usa o finish() da Activity para voltar
                 )
             }
         }

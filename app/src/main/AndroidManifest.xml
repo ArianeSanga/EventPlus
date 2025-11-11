@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -14,25 +15,59 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Event"
-        tools:targetApi="34">
-
-        <activity android:name=".ui.activities.RegisterActivity" android:exported="false"/>
-        <activity android:name=".ui.activities.ConvidadoActivity" android:exported="false" />
-        <activity android:name=".ui.activities.ConvidadoHomeActivity" android:exported="false" />
-        <activity android:name=".ui.activities.ConvidadoLoginActivity" android:exported="false" />
-        <activity android:name=".ui.activities.CreateEventActivity" android:exported="false"/>
-        <activity android:name=".ui.activities.EditProfileActivity" android:exported="false" />
-        <activity android:name=".ui.activities.EventListActivity" android:exported="false" />
-        <activity android:name=".ui.activities.ForgotPasswordActivity" android:exported="false" android:theme="@style/Theme.Event" />
-        <activity android:name=".ui.activities.HomeActivity" android:exported="false" />
-        <activity android:name=".ui.activities.LoginActivity" android:exported="false" android:label="Acesso com Email" android:theme="@style/Theme.Event" />
-        <activity android:name=".ui.activities.ProfileActivity" android:exported="false" />
-        <activity android:name=".ui.activities.TarefaActivity" android:exported="false" />
-        <activity android:name=".ui.activities.MainActivity" android:exported="true" android:theme="@style/Theme.Event">
+        tools:targetApi="34" >
+        <activity
+            android:name=".ui.activities.SplashActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ConvidadoActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ConvidadoHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ConvidadoLoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.CreateEventActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.EditProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.EventListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ForgotPasswordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Event" />
+        <activity
+            android:name=".ui.activities.HomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.LoginActivity"
+            android:exported="false"
+            android:label="Acesso com Email"
+            android:theme="@style/Theme.Event" />
+        <activity
+            android:name=".ui.activities.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.TarefaActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Event" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
     </application>
+
 </manifest>
