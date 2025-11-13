@@ -1,37 +1,52 @@
 package com.arianesanga.event.ui.screens
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.ExposedDropdownMenuDefaults.textFieldColors
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
+import com.arianesanga.event.data.local.database.AppDatabase
+import com.arianesanga.event.data.local.model.User
+import com.arianesanga.event.data.remote.firebase.AuthService
+import com.arianesanga.event.data.remote.repository.UserRemoteRepository
+import com.arianesanga.event.data.repository.UserRepository
 import com.arianesanga.event.ui.theme.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(
-    onRegisterClick: (fullname: String, username: String, phone: String, email: String, password: String) -> Unit,
-    onNavigateToLogin: () -> Unit,
-    onBack: () -> Unit,
-    isLoading: Boolean,
-    errorMessage: String?
-) {
+fun RegisterScreen(navController: NavController) {
+
+    val context = LocalContext.current
+    val activity = context as ComponentActivity
+    val lifecycleScope = activity.lifecycleScope
+    val scope = rememberCoroutineScope()
+
+    val appDb = remember { AppDatabase.getInstance(context) }
+    val userRepo = remember { UserRepository(appDb.userDao(), UserRemoteRepository()) }
+    val authService = remember { AuthService() }
+
     var fullname by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -40,27 +55,15 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-
-    val textFieldColors = OutlinedTextFieldDefaults.colors(
-        focusedBorderColor = LIGHTBLUE,
-        unfocusedBorderColor = WHITE,
-        focusedLabelColor = LIGHTBLUE,
-        unfocusedLabelColor = WHITE,
-        cursorColor = LIGHTBLUE,
-        focusedTextColor = WHITE,
-        unfocusedTextColor = WHITE,
-        focusedLeadingIconColor = LIGHTBLUE,
-        unfocusedLeadingIconColor = WHITE,
-        focusedTrailingIconColor = LIGHTBLUE,
-        unfocusedTrailingIconColor = WHITE
-    )
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("") },
+            androidx.compose.material3.TopAppBar(
+                title = {},
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar", tint = WHITE)
                     }
                 },
@@ -68,6 +71,7 @@ fun RegisterScreen(
             )
         }
     ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,6 +81,7 @@ fun RegisterScreen(
                 .padding(horizontal = 24.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Text("CRIAR CONTA", color = WHITE, fontSize = 28.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -87,7 +92,21 @@ fun RegisterScreen(
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LIGHTBLUE,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+                    cursorColor = LIGHTBLUE,
+                    focusedLabelColor = LIGHTBLUE,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    focusedLeadingIconColor = LIGHTBLUE,
+                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTrailingIconColor = LIGHTBLUE,
+                    unfocusedTrailingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTextColor = WHITE,
+                    unfocusedTextColor = WHITE,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
             )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -97,7 +116,21 @@ fun RegisterScreen(
                 leadingIcon = { Icon(Icons.Default.AccountCircle, contentDescription = null) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LIGHTBLUE,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+                    cursorColor = LIGHTBLUE,
+                    focusedLabelColor = LIGHTBLUE,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    focusedLeadingIconColor = LIGHTBLUE,
+                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTrailingIconColor = LIGHTBLUE,
+                    unfocusedTrailingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTextColor = WHITE,
+                    unfocusedTextColor = WHITE,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
             )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -108,7 +141,21 @@ fun RegisterScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LIGHTBLUE,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+                    cursorColor = LIGHTBLUE,
+                    focusedLabelColor = LIGHTBLUE,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    focusedLeadingIconColor = LIGHTBLUE,
+                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTrailingIconColor = LIGHTBLUE,
+                    unfocusedTrailingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTextColor = WHITE,
+                    unfocusedTextColor = WHITE,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
             )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -119,7 +166,21 @@ fun RegisterScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LIGHTBLUE,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+                    cursorColor = LIGHTBLUE,
+                    focusedLabelColor = LIGHTBLUE,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    focusedLeadingIconColor = LIGHTBLUE,
+                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTrailingIconColor = LIGHTBLUE,
+                    unfocusedTrailingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTextColor = WHITE,
+                    unfocusedTextColor = WHITE,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
             )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -138,7 +199,21 @@ fun RegisterScreen(
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LIGHTBLUE,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+                    cursorColor = LIGHTBLUE,
+                    focusedLabelColor = LIGHTBLUE,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    focusedLeadingIconColor = LIGHTBLUE,
+                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTrailingIconColor = LIGHTBLUE,
+                    unfocusedTrailingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTextColor = WHITE,
+                    unfocusedTextColor = WHITE,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
             )
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
@@ -157,7 +232,21 @@ fun RegisterScreen(
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
-                colors = textFieldColors
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = LIGHTBLUE,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.4f),
+                    cursorColor = LIGHTBLUE,
+                    focusedLabelColor = LIGHTBLUE,
+                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                    focusedLeadingIconColor = LIGHTBLUE,
+                    unfocusedLeadingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTrailingIconColor = LIGHTBLUE,
+                    unfocusedTrailingIconColor = Color.White.copy(alpha = 0.7f),
+                    focusedTextColor = WHITE,
+                    unfocusedTextColor = WHITE,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
+                )
             )
 
             if (errorMessage != null) {
@@ -166,20 +255,85 @@ fun RegisterScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+
             Button(
-                onClick = { if (password == confirmPassword) onRegisterClick(fullname, username, phone, email, password) },
+                onClick = {
+                    if (fullname.isBlank() || username.isBlank() || phone.isBlank() ||
+                        email.isBlank() || password.isBlank()
+                    ) {
+                        errorMessage = "Preencha todos os campos."
+                        return@Button
+                    }
+                    if (password != confirmPassword) {
+                        errorMessage = "As senhas não coincidem."
+                        return@Button
+                    }
+
+                    isLoading = true
+                    errorMessage = null
+
+                    authService.registerUser(
+                        email = email,
+                        password = password,
+                        onSuccess = { uid ->
+                            lifecycleScope.launch {
+                                try {
+                                    userRepo.insertUser(
+                                        User(
+                                            uid = uid,
+                                            fullname = fullname,
+                                            username = username,
+                                            email = email,
+                                            phone = phone
+                                        )
+                                    )
+
+                                    authService.logout()
+
+                                    navController.navigate("login") {
+                                        popUpTo("register") { inclusive = true }
+                                    }
+
+                                } catch (e: Exception) {
+                                    errorMessage = "Erro ao salvar usuário localmente."
+                                } finally {
+                                    isLoading = false
+                                }
+                            }
+                        },
+                        onError = {
+                            isLoading = false
+                            errorMessage = it
+                        }
+                    )
+                },
                 enabled = !isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = LIGHTBLUE),
-                modifier = Modifier.fillMaxWidth().height(55.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp)
             ) {
-                if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = WHITE, strokeWidth = 3.dp)
-                else Text("CADASTRAR", color = WHITE)
+                if (isLoading)
+                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = WHITE)
+                else
+                    Text("CADASTRAR", color = WHITE)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 Text("Já tem uma conta? ", color = WHITE)
-                Text("Faça Login", color = LIGHTBLUE, fontWeight = FontWeight.Bold, modifier = Modifier.clickable { onNavigateToLogin() })
+                Text(
+                    "Faça Login",
+                    color = LIGHTBLUE,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable(
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        navController.navigate("login")
+                    }
+                )
             }
         }
     }

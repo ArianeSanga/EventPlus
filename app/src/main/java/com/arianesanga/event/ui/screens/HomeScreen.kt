@@ -12,23 +12,36 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.arianesanga.event.R
-import com.arianesanga.event.ui.activities.CreateEventActivity
-import com.arianesanga.event.ui.activities.HomeActivity
+import com.arianesanga.event.ui.components.BottomMenu
+import com.arianesanga.event.ui.components.TopAppBar
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.MaterialTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = "início",
-                showBackButton = true
+                showBackButton = false
             )
         },
-        bottomBar = { BottomMenu(context, currentActivity = HomeActivity::class.java) }
+        bottomBar = {
+            BottomMenu(
+                currentRoute = "home",
+                onNavigate = { route ->
+                    navController.navigate(route) {
+                        launchSingleTop = true
+                        popUpTo("home") { inclusive = false }
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -50,7 +63,8 @@ fun HomeScreen() {
             Text(
                 text = "Bem-vindo(a) ao EventApp 🎉",
                 fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(12.dp))

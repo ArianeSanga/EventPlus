@@ -3,7 +3,8 @@ plugins {
     kotlin("android")
     kotlin("plugin.compose")
     id("com.google.gms.google-services")
-    id("org.jetbrains.kotlin.kapt")
+    // ✅ Use o plugin do KSP em vez do kapt
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -43,10 +44,17 @@ android {
 }
 
 dependencies {
-    // ✅ Firebase BoM (controla versões automaticamente)
+    implementation(libs.androidx.compose.foundation)
+    implementation(libs.androidx.navigation.runtime.ktx)
+    implementation(libs.androidx.compose.ui)
+    val roomVersion = "2.8.3"
+    val nav_version = "2.9.6"
+    implementation("androidx.navigation:navigation-compose:${nav_version}")
+
+    // ✅ Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
 
-    // 🔥 Firebase SDKs (sem versões!)
+    // 🔥 Firebase SDKs
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
@@ -66,17 +74,22 @@ dependencies {
     // 📱 Activity Compose
     implementation("androidx.activity:activity-compose:1.9.0")
 
-    // 🖼️ Coil (carregamento de imagens)
+    // 🖼️ Coil (imagens)
     implementation("io.coil-kt:coil-compose:2.4.0")
 
     // 🧩 Room (banco local)
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
+    // (opcional) Paging 3 Integration com Room
+    implementation("androidx.room:room-paging:$roomVersion")
+
+    // Material e UI
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    kapt("androidx.room:room-compiler:2.6.1")
 
     // 🧪 Testes
     testImplementation("junit:junit:4.13.2")
