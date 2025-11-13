@@ -5,18 +5,24 @@ import com.arianesanga.event.data.local.model.Event
 
 @Dao
 interface EventDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(event: Event)
+    @Query("SELECT * FROM event")
+    suspend fun getAllEvents(): List<Event>
 
-    @Update
-    suspend fun update(event: Event)
+    @Query("SELECT * FROM event WHERE id = :id")
+    suspend fun getEventById(id: Int): Event?
 
-    @Delete
-    suspend fun delete(event: Event)
-
-    @Query("SELECT * FROM event WHERE userUid = :userUid")
+    @Query("SELECT * FROM event WHERE user_uid = :userUid")
     suspend fun getEventsByUser(userUid: String): List<Event>
 
-    @Query("SELECT * FROM event WHERE id = :id LIMIT 1")
-    suspend fun getEventById(id: String): Event?
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertEvent(event: Event): Long
+
+    @Update
+    suspend fun updateEvent(event: Event)
+
+    @Delete
+    suspend fun deleteEvent(event: Event)
+
+    @Query("DELETE FROM event WHERE id = :id")
+    suspend fun deleteById(id: Int)
 }

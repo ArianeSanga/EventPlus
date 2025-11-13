@@ -1,4 +1,4 @@
-package com.arianesanga.event.ui.activities
+package com.arianesanga.event.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -15,25 +15,29 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.google.firebase.auth.FirebaseAuth
 import com.arianesanga.event.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPasswordScreen(
-    onBack: () -> Unit,
-    onSendReset: (String) -> Unit
-) {
-    var email by remember { mutableStateOf("") }
+fun ForgotPasswordScreen(navController: NavController) {
+
     val context = LocalContext.current
+    val auth = remember { FirebaseAuth.getInstance() }
+
+    var email by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Recuperar Senha") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Voltar", tint = WHITE)
                     }
                 },
@@ -43,22 +47,25 @@ fun ForgotPasswordScreen(
                 )
             )
         }
-    ) { padding ->
+    ) { paddingValues ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.linearGradient(listOf(DARKBLUE, MEDIUMBLUE, DARKBLUE))
                 )
-                .padding(padding)
+                .padding(paddingValues)
                 .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
+
             Text(
-                text = "Digite seu e-mail para redefinir a senha",
+                text = "Digite seu e-mail para redefinir sua senha",
                 color = WHITE,
                 fontSize = 18.sp,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
@@ -66,7 +73,13 @@ fun ForgotPasswordScreen(
                 value = email,
                 onValueChange = { email = it },
                 placeholder = { Text("Seu e-mail", color = WHITE.copy(alpha = 0.6f)) },
-                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = "Email", tint = LIGHTBLUE) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Email,
+                        contentDescription = "Email",
+                        tint = LIGHTBLUE
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color(0x22FFFFFF), shape = RoundedCornerShape(12.dp)),
@@ -87,19 +100,52 @@ fun ForgotPasswordScreen(
 
             Button(
                 onClick = {
-                    if (email.isNotBlank()) {
-                        onSendReset(email)
-                    } else {
+                    if (email.isBlank()) {
                         Toast.makeText(context, "Digite um e-mail válido.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        isLoading = true
+                        auth.sendPasswordResetEmail(email)
+                            .addOnCompleteListener { task ->
+                                isLoading = false
+                                if (task.isSuccessful) {
+                                    Toast.makeText(
+                                        context,
+                                        "E-mail de redefinição enviado com sucesso!",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    navController.popBackStack() // volta para LoginScreen
+                                } else {
+                                    val error = task.exception?.message ?: "Erro ao enviar o e-mail."
+                                    Toast.makeText(
+                                        context,
+                                        "Falha: $error",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = LIGHTBLUE),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(55.dp)
+                    .height(55.dp),
+                enabled = !isLoading
             ) {
-                Text("ENVIAR LINK", color = WHITE, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = WHITE,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(25.dp)
+                    )
+                } else {
+                    Text(
+                        text = "ENVIAR LINK",
+                        color = WHITE,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }

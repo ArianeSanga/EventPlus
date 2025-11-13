@@ -5,15 +5,19 @@ import com.arianesanga.event.data.local.model.User
 
 @Dao
 interface UserDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(user: User)
 
-    @Update
-    suspend fun update(user: User)
-
-    @Delete
-    suspend fun delete(user: User)
+    @Query("SELECT * FROM user")
+    suspend fun getAllUsers(): List<User>
 
     @Query("SELECT * FROM user WHERE uid = :uid LIMIT 1")
-    suspend fun getUser(uid: String): User?
+    suspend fun getUserByUid(uid: String): User?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertUser(user: User)
+
+    @Update
+    suspend fun updateUser(user: User)
+
+    @Delete
+    suspend fun deleteUser(user: User)
 }
