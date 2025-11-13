@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            EventTheme {
+            EventTheme(darkTheme = true, dynamicColor = false)  {
                 val navController = rememberNavController()
                 AppNavHost(navController = navController)
             }
