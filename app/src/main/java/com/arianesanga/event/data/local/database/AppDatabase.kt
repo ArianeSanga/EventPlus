@@ -8,7 +8,7 @@ import com.arianesanga.event.data.local.dao.*
 import com.arianesanga.event.data.local.model.*
 
 @Database(
-    entities = [User::class, Event::class, Guest::class, Task::class],
+    entities = [User::class, Event::class, Guest::class, Task::class, NotificationEntity::class],
     version = 5,
     exportSchema = false
 )
@@ -18,6 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
     abstract fun guestDao(): GuestDao
     abstract fun taskDao(): TaskDao
+    abstract fun notificationDao(): NotificationDao
 
     companion object {
         @Volatile

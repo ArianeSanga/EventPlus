@@ -1,6 +1,8 @@
 package com.arianesanga.event.data.local.model
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 @Entity(tableName = "task")
 data class Task(
@@ -8,7 +10,8 @@ data class Task(
     @ColumnInfo(name = "id")
     val id: Int = 0,
 
-    @ColumnInfo(name = "event_id") val eventId: Int,
+    @ColumnInfo(name = "event_id")
+    val eventId: Int,
 
     @ColumnInfo(name = "title")
     val title: String,
@@ -16,9 +19,10 @@ data class Task(
     @ColumnInfo(name = "description")
     val description: String? = null,
 
-    @ColumnInfo(name = "deadline")
-    val deadline: String? = null,
+    @ColumnInfo(name = "value")
+    val value: Double = 0.0,
 
-    @ColumnInfo(name = "is_completed")
-    val isCompleted: Boolean = false
+
+    @ColumnInfo(name = "status")
+    val status: Int = 0
 )

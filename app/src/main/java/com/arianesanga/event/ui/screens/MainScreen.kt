@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -98,7 +99,7 @@ fun MainScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(
-                Brush.linearGradient(listOf(DARKBLUE, MEDIUMBLUE, DARKBLUE))
+                Brush.linearGradient(listOf(DARKBLUE, MEDIUMBLUE, MEDIUMBLUE, DARKBLUE, DARKBLUE))
             )
             .verticalScroll(rememberScrollState())
             .padding(24.dp),
@@ -136,30 +137,53 @@ fun MainScreen(navController: NavController) {
         Button(
             onClick = { navController.navigate("login") },
             colors = ButtonDefaults.buttonColors(containerColor = PINK),
-            modifier = Modifier.fillMaxWidth().height(55.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp),
+            shape = RoundedCornerShape(15.dp)
         ) {
             Icon(Icons.Filled.Email, contentDescription = null, tint = WHITE)
-            Spacer(Modifier.width(8.dp))
-            Text("ENTRAR COM EMAIL", color = WHITE)
+            Spacer(Modifier.width(10.dp))
+            Text("ENTRAR COM EMAIL", color = WHITE, fontSize = 15.sp)
         }
 
         Spacer(Modifier.height(12.dp))
 
         OutlinedButton(
             onClick = { googleSignInLauncher.launch(googleSignInClient.signInIntent) },
-            modifier = Modifier.fillMaxWidth().height(55.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(55.dp),
+            shape = RoundedCornerShape(15.dp)
         ) {
-            Text("ENTRAR COM GOOGLE", color = WHITE)
+            Icon(
+                painter = painterResource(id = R.drawable.google_icon),
+                contentDescription = "Google",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(21.dp)
+            )
+            Spacer(Modifier.width(10.dp))
+            Text("ENTRAR COM GOOGLE", color = WHITE, fontSize = 15.sp)
         }
 
         Spacer(Modifier.height(16.dp))
 
+        val annotated = buildAnnotatedString {
+
+            withStyle(style = SpanStyle(color = Color.White.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)) {
+                append("novo por aqui? ")
+            }
+
+            withStyle(style = SpanStyle(color = PINK, fontWeight = FontWeight.Bold)) {
+                append("cadastre-se")
+            }
+        }
+
         Text(
-            text = "Não tem uma conta? CADASTRE-SE",
-            color = PINK,
+            text = annotated,
             modifier = Modifier.clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
             ) {
                 navController.navigate("register")
             }

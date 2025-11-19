@@ -6,6 +6,14 @@ import com.arianesanga.event.data.remote.repository.TaskRemoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+data class TaskStats(
+    val pendingCount: Int,
+    val inProgressCount: Int,
+    val completedCount: Int,
+    val committedValue: Double,
+    val completedValue: Double
+)
+
 class TaskRepository(
     private val local: TaskDao,
     private val remote: TaskRemoteRepository
@@ -18,27 +26,29 @@ class TaskRepository(
     suspend fun insertTask(task: Task) = withContext(Dispatchers.IO) {
         val rowId = local.insertTask(task)
         val generatedId = rowId.toInt()
-        val remoteId = generatedId.toString()
+
 
         val data = mutableMapOf<String, Any>()
         data["id"] = generatedId
         data["eventId"] = task.eventId
         data["title"] = task.title
         task.description?.let { data["description"] = it }
-        task.deadline?.let { data["deadline"] = it }
-        data["isCompleted"] = task.isCompleted
+        data["value"] = task.value
+        data["status"] = task.status
 
-        remote.createOrUpdateTask(remoteId, data) { _, _ -> }
+        remote.createOrUpdateTask(generatedId.toString(), data) { _, _ -> }
     }
 
     suspend fun updateTask(task: Task) = withContext(Dispatchers.IO) {
         local.updateTask(task)
 
         val data = mutableMapOf<String, Any>()
+        data["id"] = task.id
+        data["eventId"] = task.eventId
         data["title"] = task.title
         task.description?.let { data["description"] = it }
-        task.deadline?.let { data["deadline"] = it }
-        data["isCompleted"] = task.isCompleted
+        data["value"] = task.value
+        data["status"] = task.status
 
         remote.createOrUpdateTask(task.id.toString(), data) { _, _ -> }
     }
@@ -46,5 +56,25 @@ class TaskRepository(
     suspend fun deleteTask(task: Task) = withContext(Dispatchers.IO) {
         local.deleteTask(task)
         remote.deleteTask(task.id.toString()) { _ -> }
+    }
+
+    suspend fun getStatsForEvent(eventId: Int): TaskStats = withContext(Dispatchers.IO) {
+        val pending = local.countByStatus(eventId, 0)
+        val inProgress = local.countByStatus(eventId, 1)
+        val completed = local.countByStatus(eventId, 2)
+
+        val sumPending = local.sumValueByStatus(eventId, 0)
+        val sumInProgress = local.sumValueByStatus(eventId, 1)
+        val sumCompleted = local.sumValueByStatus(eventId, 2)
+
+        val committed = sumPending + sumInProgress + sumCompleted
+
+        TaskStats(
+            pendingCount = pending,
+            inProgressCount = inProgress,
+            completedCount = completed,
+            committedValue = committed,
+            completedValue = sumCompleted
+        )
     }
 }

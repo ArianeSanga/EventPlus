@@ -16,8 +16,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -46,7 +44,7 @@ fun LoginScreen(
 
     Scaffold(
         topBar = {
-            androidx.compose.material3.TopAppBar(
+            TopAppBar(
                 title = {},
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -55,62 +53,71 @@ fun LoginScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
-        }
+        },
+        containerColor = Color.Transparent
     ) { paddingValues ->
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Brush.linearGradient(listOf(DARKBLUE, MEDIUMBLUE, DARKBLUE)))
+                .background(
+                    Brush.verticalGradient(
+                        listOf(DARKBLUE, MEDIUMBLUE, MEDIUMBLUE, DARKBLUE, DARKBLUE)
+                    )
+                )
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
-                .padding(top = 40.dp),
+                .padding(horizontal = 24.dp, vertical = 5.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Text("LOGIN", color = WHITE, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                placeholder = { Text("EMAIL", color = WHITE.copy(alpha = 0.6f)) },
-                leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null, tint = LIGHTBLUE) },
-                textStyle = LocalTextStyle.current.copy(color = WHITE),
-                modifier = Modifier.fillMaxWidth().background(Color(0x22FFFFFF), RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = LIGHTBLUE,
-                    unfocusedBorderColor = Color.Transparent
-                ),
-                singleLine = true
+            Text(
+                text = "login",
+                color = WHITE,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = 1.sp
             )
+
+            Spacer(Modifier.height(20.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+
+                SimpleField(
+                    value = email,
+                    onChange = { email = it },
+                    label = "e-mail"
+                )
+
+                PasswordSimpleField(
+                    value = password,
+                    onChange = { password = it },
+                    label = "senha",
+                    visible = passwordVisible,
+                    onToggleVisibility = { passwordVisible = !passwordVisible }
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            Row {
+                Spacer(Modifier.weight(1f))
+                Text(
+                    "esqueceu a senha?",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        navController.navigate("forgot_password")
+                    }
+                )
+            }
 
             Spacer(Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                placeholder = { Text("SENHA", color = WHITE.copy(alpha = 0.6f)) },
-                leadingIcon = { Icon(Icons.Filled.Key, contentDescription = null, tint = LIGHTBLUE) },
-                trailingIcon = {
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                            contentDescription = null,
-                            tint = LIGHTBLUE
-                        )
-                    }
-                },
-                textStyle = LocalTextStyle.current.copy(color = WHITE),
-                modifier = Modifier.fillMaxWidth().background(Color(0x22FFFFFF), RoundedCornerShape(12.dp)),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true,
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
-            )
-
-            Spacer(Modifier.height(32.dp))
 
             Button(
                 onClick = {
@@ -118,6 +125,7 @@ fun LoginScreen(
                         Toast.makeText(context, "Preencha todos os campos", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
+
                     isLoading = true
 
                     authService.loginUser(
@@ -135,28 +143,32 @@ fun LoginScreen(
                         }
                     )
                 },
-                enabled = !isLoading,
-                colors = ButtonDefaults.buttonColors(containerColor = LIGHTBLUE),
-                modifier = Modifier.fillMaxWidth().height(55.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(55.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = PINK),
+                enabled = !isLoading
             ) {
                 if (isLoading)
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = WHITE)
+                    CircularProgressIndicator(color = WHITE, modifier = Modifier.size(22.dp))
                 else
-                    Text("ENTRAR", color = WHITE)
+                    Text("entrar", color = WHITE, fontSize = 18.sp)
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(16.dp))
 
-            Row(horizontalArrangement = Arrangement.Center) {
-                Text("Esqueceu a senha? ", color = WHITE)
+            Row {
+                Text("novo por aqui?  ", color = Color.White.copy(alpha = 0.7f), fontWeight = FontWeight.Bold)
                 Text(
-                    "Clique aqui",
-                    color = LIGHTBLUE,
+                    "cadastre-se",
+                    color = PINK,
+                    fontWeight = FontWeight.Bold,
                     modifier = Modifier.clickable(
-                        indication = null,
-                        interactionSource = remember { MutableInteractionSource() }
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
                     ) {
-                        navController.navigate("forgot_password")
+                        navController.navigate("register")
                     }
                 )
             }

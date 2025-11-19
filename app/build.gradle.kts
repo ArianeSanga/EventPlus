@@ -3,7 +3,6 @@ plugins {
     kotlin("android")
     kotlin("plugin.compose")
     id("com.google.gms.google-services")
-    // ✅ Use o plugin do KSP em vez do kapt
     id("com.google.devtools.ksp")
 }
 
@@ -17,6 +16,11 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        manifestPlaceholders["OPENWEATHER_API_KEY"] =
+            (project.findProperty("OPENWEATHER_API_KEY") as? String)
+                ?: System.getenv("OPENWEATHER_API_KEY")
+                        ?: ""
     }
 
     buildTypes {
@@ -40,6 +44,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -95,4 +100,9 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.6")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // API
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
 }
