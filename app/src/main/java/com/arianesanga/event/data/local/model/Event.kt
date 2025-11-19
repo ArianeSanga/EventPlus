@@ -1,6 +1,8 @@
 package com.arianesanga.event.data.local.model
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 @Entity(tableName = "event")
 data class Event(
@@ -17,8 +19,8 @@ data class Event(
     @ColumnInfo(name = "description")
     val description: String,
 
-    @ColumnInfo(name = "date")
-    val date: String,
+    @ColumnInfo(name = "datetime")
+    val dateTime: Long,
 
     @ColumnInfo(name = "location")
     val location: String,
@@ -27,5 +29,23 @@ data class Event(
     val budget: Double,
 
     @ColumnInfo(name = "image_uri")
-    val imageUri: String? = null
+    val imageUri: String? = null,
+
+    @ColumnInfo(name = "weather_temp")
+    val weatherTemp: Double? = null,
+
+    @ColumnInfo(name = "weather_desc")
+    val weatherDesc: String? = null,
+
+    @ColumnInfo(name = "weather_icon")
+    val weatherIcon: String? = null,
+
+    @ColumnInfo(name = "weather_feels_like")
+    var weatherFeelsLike: Double? = null,
+
+    @ColumnInfo(name = "weather_humidity")
+    var weatherHumidity: Int? = null,
+
+    @ColumnInfo(name = "weather_wind_speed")
+    var weatherWindSpeed: Double? = null
 )

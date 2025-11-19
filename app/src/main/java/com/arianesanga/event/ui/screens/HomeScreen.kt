@@ -1,78 +1,105 @@
 package com.arianesanga.event.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.arianesanga.event.R
 import com.arianesanga.event.data.local.database.AppDatabase
 import com.arianesanga.event.data.local.model.Event
+import com.arianesanga.event.ui.components.AppState
 import com.arianesanga.event.ui.components.BottomMenu
 import com.arianesanga.event.ui.components.TopAppBar
+import com.arianesanga.event.ui.theme.DARKBLUE
+import com.arianesanga.event.ui.theme.MEDIUMBLUE
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
-import java.util.*
-import androidx.compose.foundation.layout.Box
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Event
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
-
+fun HomeScreen(
+    navController: NavController,
+    appState: AppState
+) {
     val context = LocalContext.current
     val db = remember { AppDatabase.getInstance(context) }
     val eventDao = db.eventDao()
 
-    var nextEvent by remember { mutableStateOf<Event?>(null) }
-    var countdown by remember { mutableStateOf("") }
+    val unread = appState.unreadCount.collectAsState(initial = 0).value
 
-    // 🔹 Buscar próximo evento
+    var nextEvent by remember { mutableStateOf<Event?>(null) }
+    var countdown by remember { mutableStateOf("--") }
+
     LaunchedEffect(Unit) {
         val events = eventDao.getAllEvents()
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-        val upcoming = events.mapNotNull { event ->
-            try {
-                val date = sdf.parse(event.date)
-                if (date != null && date.after(Date())) event to date else null
-            } catch (_: Exception) {
-                null
-            }
-        }.minByOrNull { it.second }?.first
-
-        nextEvent = upcoming
+        nextEvent = events
+            .filter { it.dateTime > System.currentTimeMillis() }
+            .minByOrNull { it.dateTime }
     }
 
-    // 🔹 Atualizar cronômetro
     LaunchedEffect(nextEvent) {
         if (nextEvent != null) {
             while (true) {
-                countdown = calculateCountdown(nextEvent!!.date)
+                countdown = calculateCountdown(nextEvent!!.dateTime)
                 delay(1000)
             }
         }
     }
 
     Scaffold(
+        containerColor = Color.Transparent,
         topBar = {
+            val unread = appState.unreadCount.collectAsState(initial = 0).value
+
+            val notifications by appState.notificationRepo
+                .notificationsFlow()
+                .collectAsState(initial = emptyList())
             TopAppBar(
-                title = "início",
-                showBackButton = false
+                title = "inicio",
+                showBackButton = false,
+                notificationCount = unread,
+                notifications = notifications,
+                onNotificationClick = {
+                    appState.nav.navigate("notifications")
+                },
+                appState = appState
             )
         },
         bottomBar = {
@@ -87,59 +114,60 @@ fun HomeScreen(navController: NavController) {
             )
         }
     ) { paddingValues ->
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            // 🔥 Banner
-            NextEventBanner(event = nextEvent, countdown = countdown)
-
-            Spacer(Modifier.height(24.dp))
-
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Logo do App",
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
                 modifier = Modifier
-                    .size(120.dp)
-                    .padding(bottom = 16.dp)
+                    .fillMaxSize()
+                    .background(
+                        Brush.linearGradient(
+                            listOf(DARKBLUE, MEDIUMBLUE, MEDIUMBLUE, DARKBLUE, DARKBLUE)
+                        )
+                    )
             )
 
-            Text(
-                text = "Bem-vindo(a) ao EventApp 🎉",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = paddingValues.calculateTopPadding())
+                    .clip(RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp))
+                    .background(Color(0xFFf0f0f0))
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(24.dp)
+                        .fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-            Spacer(Modifier.height(12.dp))
-
-            Text(
-                text = "Gerencie seus eventos, acompanhe suas atividades e aproveite ao máximo sua experiência!",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 24.dp)
-            )
+                    NextEventBanner(
+                        event = nextEvent,
+                        countdown = countdown,
+                        onCreateEvent = { navController.navigate("create_event") }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-fun NextEventBanner(event: Event?, countdown: String) {
-
+fun NextEventBanner(
+    event: Event?,
+    countdown: String,
+    onCreateEvent: (() -> Unit)? = null
+) {
     if (event == null) {
-        EmptyBanner()
+        EmptyBanner(onCreateEvent)
         return
     }
+
+    val sdf = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
+    val formattedDate = sdf.format(Date(event.dateTime))
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp),
+            .height(200.dp),
         shape = RoundedCornerShape(24.dp),
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -149,9 +177,9 @@ fun NextEventBanner(event: Event?, countdown: String) {
                 .background(
                     Brush.linearGradient(
                         listOf(
-                            Color(0xFF0EA5E9), // azul claro
-                            Color(0xFF2563EB), // azul médio
-                            Color(0xFF1E3A8A), // azul escuro
+                            Color(0xFF0EA5E9),
+                            Color(0xFF2563EB),
+                            Color(0xFF1E3A8A),
                         )
                     )
                 )
@@ -159,11 +187,10 @@ fun NextEventBanner(event: Event?, countdown: String) {
         ) {
 
             Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
 
-                // Título + nome do evento
                 Column {
                     Text(
                         text = "Próximo Evento",
@@ -176,9 +203,15 @@ fun NextEventBanner(event: Event?, countdown: String) {
                         fontWeight = FontWeight.Bold,
                         color = Color.White
                     )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = formattedDate,
+                        fontSize = 16.sp,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(Modifier.height(12.dp))
 
                 Text(
                     text = "Começa em:",
@@ -199,8 +232,7 @@ fun NextEventBanner(event: Event?, countdown: String) {
 }
 
 @Composable
-fun EmptyBanner(onCreateEvent: (() -> Unit)? = null) {
-
+fun EmptyBanner(onCreateEvent: (() -> Unit)?) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -218,7 +250,6 @@ fun EmptyBanner(onCreateEvent: (() -> Unit)? = null) {
             verticalArrangement = Arrangement.Center
         ) {
 
-            // Ícone chamativo
             Icon(
                 imageVector = Icons.Default.Event,
                 contentDescription = null,
@@ -226,7 +257,7 @@ fun EmptyBanner(onCreateEvent: (() -> Unit)? = null) {
                 modifier = Modifier.size(46.dp)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
 
             Text(
                 text = "Nenhum evento criado ainda",
@@ -235,27 +266,24 @@ fun EmptyBanner(onCreateEvent: (() -> Unit)? = null) {
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "Crie seu primeiro evento e acompanhe tudo aqui!",
+                text = "Crie seu primeiro evento e acompanhe aqui!",
                 color = Color(0xFFCBD5E1),
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(16.dp))
 
-            // Botão opcional dentro do banner
             if (onCreateEvent != null) {
                 Button(
                     onClick = onCreateEvent,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFE91E63)
                     ),
-                    modifier = Modifier
-                        .height(40.dp)
-                        .padding(horizontal = 6.dp),
+                    modifier = Modifier.height(40.dp),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text("Criar Evento", color = Color.White)
@@ -264,24 +292,18 @@ fun EmptyBanner(onCreateEvent: (() -> Unit)? = null) {
         }
     }
 }
-fun calculateCountdown(dateString: String): String {
-    return try {
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val eventDate = sdf.parse(dateString) ?: return "--"
 
-        val now = Calendar.getInstance().timeInMillis
-        val diff = eventDate.time - now
+/* ---------------------------------------------------------
+    FUNÇÃO DE CONTAGEM REGRESSIVA (AGORA COM LONG)
+--------------------------------------------------------- */
+fun calculateCountdown(eventMillis: Long): String {
+    val diff = eventMillis - System.currentTimeMillis()
+    if (diff <= 0) return "Agora!"
 
-        if (diff <= 0) return "Agora!"
+    val days = diff / (1000 * 60 * 60 * 24)
+    val hours = (diff / (1000 * 60 * 60)) % 24
+    val minutes = (diff / (1000 * 60)) % 60
+    val seconds = (diff / 1000) % 60
 
-        val days = diff / (1000 * 60 * 60 * 24)
-        val hours = (diff / (1000 * 60 * 60)) % 24
-        val minutes = (diff / (1000 * 60)) % 60
-        val seconds = (diff / 1000) % 60
-
-        "%02dd %02dh %02dm %02ds".format(days, hours, minutes, seconds)
-    } catch (e: Exception) {
-        "--"
-    }
+    return "%02dd %02dh %02dm %02ds".format(days, hours, minutes, seconds)
 }
-
