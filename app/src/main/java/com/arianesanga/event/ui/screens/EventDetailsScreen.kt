@@ -119,12 +119,16 @@ fun EventDetailsScreen(
 
     LaunchedEffect(eventId) {
         withContext(Dispatchers.IO) {
+
             val ev = db.eventDao().getEventById(eventId)
             val taskList = db.taskDao().getTasksByEvent(eventId)
 
-            val completedValue = taskList.filter { it.status == 2 }.sumOf { it.value }
-            val pct = if (ev?.budget ?: 0.0 > 0)
-                (completedValue / ev!!.budget).coerceIn(0.0, 1.0)
+            // calcula tarefas concluídas / total
+            val totalTasks = taskList.size
+            val completedTasks = taskList.count { it.status == 2 }
+
+            val pct = if (totalTasks > 0)
+                completedTasks.toDouble() / totalTasks.toDouble()
             else 0.0
 
             withContext(Dispatchers.Main) {
