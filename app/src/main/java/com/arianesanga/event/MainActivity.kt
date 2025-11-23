@@ -1,7 +1,9 @@
 package com.arianesanga.event
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
@@ -18,8 +20,14 @@ import com.arianesanga.event.ui.navigation.AppNavHost
 import com.arianesanga.event.ui.theme.EventTheme
 
 class MainActivity : ComponentActivity() {
+
+    private var initialInviteEventId: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Apenas extrai o eventId — SEM mexer mais nada
+        initialInviteEventId = getEventIdFromIntent(intent)
 
         NotificationHelper.createChannel(this)
 
@@ -27,9 +35,39 @@ class MainActivity : ComponentActivity() {
             EventTheme(darkTheme = true, dynamicColor = false)  {
                 RequestNotificationPermissionIfNeeded()
                 val navController = rememberNavController()
-                AppNavHost(navController = navController)
+
+                // Apenas passa o eventId se existir
+                AppNavHost(
+                    navController = navController,
+                    initialInviteEventId = initialInviteEventId
+                )
             }
         }
+    }
+
+    override fun onNewIntent(newIntent: Intent) {
+        super.onNewIntent(newIntent)
+
+        val newId = getEventIdFromIntent(newIntent)
+        if (!newId.isNullOrBlank()) {
+            initialInviteEventId = newId
+            setIntent(newIntent)
+        }
+    }
+
+
+    private fun getEventIdFromIntent(intent: Intent?): String? {
+        if (intent == null) return null
+
+        val data: Uri? = intent.data
+        val queryId = data?.getQueryParameter("eventId")
+
+        if (!queryId.isNullOrBlank()) return queryId
+
+        val extraId = intent.getStringExtra("eventId")
+        if (!extraId.isNullOrBlank()) return extraId
+
+        return null
     }
 }
 

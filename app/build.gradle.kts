@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidx.navigation.runtime.ktx)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.foundation)
+    implementation(libs.androidx.animation)
     val roomVersion = "2.8.3"
     val nav_version = "2.9.6"
     implementation("androidx.navigation:navigation-compose:${nav_version}")

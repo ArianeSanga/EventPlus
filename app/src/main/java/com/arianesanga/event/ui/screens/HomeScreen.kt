@@ -1,9 +1,6 @@
 package com.arianesanga.event.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,8 +34,10 @@ import com.arianesanga.event.ui.components.BottomMenu
 import com.arianesanga.event.ui.components.TopAppBar
 import com.arianesanga.event.ui.theme.DARKBLUE
 import com.arianesanga.event.ui.theme.MEDIUMBLUE
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -55,6 +54,34 @@ fun HomeScreen(
     val eventDao = db.eventDao()
     val taskDao = db.taskDao()
 
+    // 🍃 Nome do usuário real (com fallback inteligente)
+    val firestore = remember { FirebaseFirestore.getInstance() }
+    var userName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(currentUserUid) {
+        if (currentUserUid != null) {
+            firestore.collection("users")
+                .document(currentUserUid)
+                .get()
+                .addOnSuccessListener { doc ->
+
+                    val fullName = doc.getString("fullname")   // ✔️ nome completo REAL
+                    val user = doc.getString("username")       // ✔️ nome de usuário
+
+                    userName = when {
+                        !fullName.isNullOrBlank() -> fullName.split(" ").first()
+                        !user.isNullOrBlank() -> user
+                        else -> null
+                    }
+                }
+                .addOnFailureListener {
+                    userName = null
+                }
+        } else {
+            userName = null
+        }
+    }
+
     var nextEvent by remember { mutableStateOf<Event?>(null) }
     var countdown by remember { mutableStateOf("--") }
 
@@ -64,11 +91,8 @@ fun HomeScreen(
     var tasksEstimatedValue by remember { mutableStateOf(0.0) }
     var tasksDoneValue by remember { mutableStateOf(0.0) }
 
-    val appear = remember { MutableTransitionState(false) }
-
     LaunchedEffect(Unit) {
         delay(200)
-        appear.targetState = true
 
         val events = if (currentUserUid != null)
             eventDao.getEventsByUser(currentUserUid)
@@ -135,10 +159,13 @@ fun HomeScreen(
             tasksEstimatedValue = tasksEstimatedValue,
             tasksDoneValue = tasksDoneValue,
             appState = appState,
-            navController = navController
+            navController = navController,
+            userName = userName
         )
     }
 }
+
+/* -------------------------------------------------------------------------- */
 
 @Composable
 fun HomeContent(
@@ -150,8 +177,9 @@ fun HomeContent(
     tasksEstimatedValue: Double,
     tasksDoneValue: Double,
     appState: AppState,
-    navController: NavController
-) {
+    navController: NavController,
+    userName: String?
+){
     Box(modifier = Modifier.fillMaxSize()) {
 
         Box(
@@ -181,7 +209,7 @@ fun HomeContent(
             ) {
 
                 HeaderSection(
-                    userName = "Ariane",
+                    userName = userName,
                     onAvatarClick = { navController.navigate("profile") }
                 )
 
@@ -262,7 +290,7 @@ fun HomeContent(
 
 @Composable
 fun HeaderSection(
-    userName: String,
+    userName: String?,
     onAvatarClick: () -> Unit
 ) {
     Row(
@@ -273,7 +301,8 @@ fun HeaderSection(
 
         Column {
             Text(
-                "Olá, $userName 👋",
+                if (userName.isNullOrBlank()) "Olá 👋"
+                else "Olá, ${userName.capitalize()} 👋",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF0F172A)
@@ -294,7 +323,6 @@ fun HeaderSection(
         }
     }
 }
-
 /* -------------------------------------------------------------------------- */
 /* ------------------------- SUMMARY ROW ------------------------------------ */
 /* -------------------------------------------------------------------------- */

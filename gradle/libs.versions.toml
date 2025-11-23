@@ -23,6 +23,7 @@ firebaseStorageKtx = "22.0.1"
 navigationRuntimeKtx = "2.9.6"
 ui = "1.9.4"
 foundationVersion = "1.9.5"
+animation = "1.9.5"
 
 
 [libraries]
@@ -54,6 +55,7 @@ firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage
 androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundationVersion" }
+androidx-animation = { group = "androidx.compose.animation", name = "animation", version.ref = "animation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

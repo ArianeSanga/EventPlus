@@ -437,7 +437,9 @@ fun EventDetailsScreen(
                                     }
 
                                     OutlinedButton(
-                                        onClick = { navController.navigate("event_guests/$eventId") },
+                                        onClick = {
+                                            navController.navigate("event_guests/${ev.id}")
+                                        },
                                         modifier = Modifier
                                             .weight(1f)
                                             .height(45.dp),
